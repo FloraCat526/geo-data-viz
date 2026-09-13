@@ -35,21 +35,6 @@ python3 scripts/profile_geo.py /path/to/stores.csv --out-dir work/profile \
   --crs wgs84 --lng-field longitude --lat-field latitude --value-field orders
 ```
 
-## 高德海外地图
-
-复用适配器时，在高德运行配置中设置布尔值 `showOversea: true`：
-
-```js
-const adapter = await createProvider('amap', mapElement, {
-  ...authorizedRuntimeConfig,
-  showOversea: true,
-}, camera);
-```
-
-适配器会把该值传给 `AMap.Map`。未设置或设为 `false` 时保持关闭。Key 还必须具备世界地图权限；该开关不会授予权限，初始化 `complete` 事件也不证明真实底图已显示。[高德官方示例](https://developer.amap.com/demo/javascript-api-v2/example/doc-demo/showOversea)
-
-运行配置只使用获授权的浏览器 Key；不要将真实凭证提交到仓库。
-
 ## 目录
 
 - [SKILL.md](SKILL.md)：工作流入口。
@@ -58,20 +43,3 @@ const adapter = await createProvider('amap', mapElement, {
 - [references/](references/)：数据契约、效果选择和各家地图参考。
 - `agents/`：Agent 界面元数据。
 - `tests/`：数据分析、坐标转换和模拟 SDK 回归测试。
-
-## 测试与验证范围
-
-Python 3.10+、Node.js 20+：
-
-```bash
-python3 -m unittest discover -s tests -p 'test_*.py' -v
-node --test tests/*.test.mjs
-```
-
-高德回归测试验证海外开关的开启、关闭及未配置三种情况，并检查原相机中心保留。测试使用模拟 SDK，不消耗地图 Key；真实海外底图及 A→B→A 切换需在获授权的环境验收。
-
-当前仍有已知限制：CRS 名称解析存在模糊匹配；本地转换使用粗略矩形范围，对部分境外点不适用；异常的几何 type 可能中断分析。接入前应核实数据声明和转换范围。此次修复仅覆盖高德海外开关。
-
-## 许可证
-
-当前尚未添加许可证文件。地图 SDK、地图内容及服务分别适用供应商条款。
