@@ -4,6 +4,17 @@
 
 支持为 Google Maps、Mapbox、Maptec、百度、高德、腾讯选择实现路线。地图需要用户自己的 Key 和相应权限；能力参考文档不代表六家所有图层均已通过真实环境验收。
 
+## 效果展示
+
+以下截图展示不同数据与可视化效果的组合，作品可由 Skill 按任务生成独立页面。
+
+| | |
+| --- | --- |
+| **意大利城市人口 · 星光气泡**<br>![意大利城市人口 · 星光气泡](assets/screenshots/italy-city-population.png) | **新加坡滨海连道 · 霓虹路线**<br>![新加坡滨海连道 · 霓虹路线](assets/screenshots/singapore-coastal-routes.png) |
+| **加州充电站 · 图标点**<br>![加州充电站 · 图标点](assets/screenshots/california-ev-charging.png) | **新加坡历史航线 · 飞线**<br>![新加坡历史航线 · 飞线](assets/screenshots/singapore-flight-routes.png) |
+| **新加坡停车分布 · 蜂窝图**<br>![新加坡停车分布 · 蜂窝图](assets/screenshots/singapore-parking-hexagons.png) | **意大利地震 · 波纹图**<br>![意大利地震 · 波纹图](assets/screenshots/italy-earthquake-ripples.png) |
+| **新加坡住宅 · 3D 热力图**<br>![新加坡住宅 · 3D 热力图](assets/screenshots/singapore-housing-3d-heatmap.png) | **新加坡商户 · 点聚合**<br>![新加坡商户 · 点聚合](assets/screenshots/singapore-business-clusters.png) |
+
 ## 安装到 Codex
 
 在终端执行（目标目录应不存在）：
@@ -40,6 +51,7 @@ python3 scripts/profile_geo.py /path/to/stores.csv --out-dir work/profile \
 - [SKILL.md](SKILL.md)：工作流入口。
 - `scripts/`：本地数据分析与规范化。
 - `assets/adapters/`：地图 SDK 接入辅助模块和近似坐标转换。
+- `assets/screenshots/`：README 效果展示截图。
 - [references/](references/)：数据契约、效果选择和各家地图参考。
 - `agents/`：Agent 界面元数据。
 - `tests/`：数据分析、坐标转换和模拟 SDK 回归测试。
