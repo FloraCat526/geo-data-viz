@@ -1,8 +1,46 @@
 # Geo Data Viz
 
-一个独立的地理数据可视化 Agent Skill：在 AI 对话中提供 CSV、Excel、JSON 或 GeoJSON，由 Agent 分析字段和空间数据，根据任务生成交互式地图。
+把地理数据变成交互式地图的独立 Agent Skill。在 AI 对话中提供 CSV、Excel、JSON 或 GeoJSON，由 Agent 分析字段、坐标系和空间分布，生成适合这份数据的地图作品。
 
-支持为 Google Maps、Mapbox、Maptec、百度、高德、腾讯选择实现路线。地图需要用户自己的 Key 和相应权限；能力参考文档不代表六家所有图层均已通过真实环境验收。
+支持气泡、聚合、热力、蜂窝、飞线、波纹等可视化表达，可根据任务选择 Mapbox、Google Maps、Maptec、百度、高德或腾讯地图。各服务的能力与配置见 [地图服务参考](https://github.com/FloraCat526/geo-data-viz/tree/main/references/capabilities)。
+
+[npm](https://www.npmjs.com/package/@floracat/geo-data-viz) · [GitHub](https://github.com/FloraCat526/geo-data-viz) · [效果展示](#效果展示)
+
+## 快速开始
+
+### 1. 安装 Skill
+
+准备 Node.js 20+，在终端运行：
+
+```bash
+npx @floracat/geo-data-viz@latest install
+```
+
+默认安装到 `~/.agents/skills/geo-data-viz`，供 Codex 使用。无需下载仓库或启动演示平台。安装后若未显示 Skill，重新启动 Agent。
+
+### 2. 提供数据与地图配置
+
+在对话中附上数据文件，并说明想展示的指标、已知坐标系和地图服务。地图需要你自己的 Key 及相应权限，可让 Agent 通过本地环境变量配置；不要把真实凭证提交到仓库。
+
+数据分析需要 Python 3.10+，CSV、JSON、GeoJSON 的基础分析无需额外 Python 依赖。Excel 的可选依赖安装方式见下方「手动分析数据」。
+
+### 3. 在对话中使用
+
+```text
+使用 $geo-data-viz 分析这份意大利城市人口 GeoJSON。
+坐标系为 WGS84，使用 Mapbox，读取本地环境变量中的 Token。
+以人口展示星光气泡，支持大区筛选、城市搜索和点击查看详情，
+生成一个可以独立运行的交互式地图页面。
+```
+
+也可以直接描述目标，让 Agent 根据数据选择合适的表达：
+
+```text
+使用 $geo-data-viz 分析附件门店数据，展示订单量和空间分布，
+支持按区域筛选。先检查字段和坐标系，再选择适合的地图效果。
+```
+
+Agent 会先分析数据与坐标系，确定指标和视觉表达，再生成地图作品。坐标系不明确时需补充依据；只有地址的数据需先完成地理编码。
 
 ## 效果展示
 
@@ -15,67 +53,75 @@
 | **新加坡停车分布 · 蜂窝图**<br>![新加坡停车分布 · 蜂窝图](https://raw.githubusercontent.com/FloraCat526/geo-data-viz/0316650/assets/screenshots/singapore-parking-hexagons.png) | **意大利地震 · 波纹图**<br>![意大利地震 · 波纹图](https://raw.githubusercontent.com/FloraCat526/geo-data-viz/0316650/assets/screenshots/italy-earthquake-ripples.png) |
 | **新加坡住宅 · 3D 热力图**<br>![新加坡住宅 · 3D 热力图](https://raw.githubusercontent.com/FloraCat526/geo-data-viz/0316650/assets/screenshots/singapore-housing-3d-heatmap.png) | **新加坡商户 · 点聚合**<br>![新加坡商户 · 点聚合](https://raw.githubusercontent.com/FloraCat526/geo-data-viz/0316650/assets/screenshots/singapore-business-clusters.png) |
 
-## 安装到 Codex
+## 安装选项与更新
 
-需要 Node.js 20+。在终端运行：
+| 使用范围 | 命令 | 安装位置 |
+| --- | --- | --- |
+| 当前用户（默认） | `npx @floracat/geo-data-viz@latest install` | `~/.agents/skills/geo-data-viz` |
+| 当前项目 | `npx @floracat/geo-data-viz@latest install --project` | 当前目录下的 `.agents/skills/geo-data-viz` |
+| 自定义技能目录 | `npx @floracat/geo-data-viz@latest install --dir /path/to/skills` | `/path/to/skills/geo-data-viz` |
 
-```bash
-npx @floracat/geo-data-viz install
-```
+`--project` 请在项目根目录执行；`--dir` 接收技能父目录，安装器会自动追加 `geo-data-viz`。其他支持本地 Skill 的 Agent，可用 `--dir` 指向其技能目录。默认与项目路径遵循 [Codex 技能目录约定](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills)。
 
-默认安装到 `~/.agents/skills/geo-data-viz`。也可以安装到当前项目或指定技能目录：
-
-```bash
-npx @floracat/geo-data-viz install --project
-npx @floracat/geo-data-viz install --dir /path/to/skills
-```
-
-`--project` 使用当前目录下的 `.agents/skills/geo-data-viz`；`--dir` 后面是父目录，安装器会自动追加 `geo-data-viz`。默认与项目目录遵循 [Codex 技能目录约定](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills)。
-
-安装器默认保留已有目录并退出。预览安装用 `--dry-run`；更新时用：
+更新默认安装：
 
 ```bash
 npx @floracat/geo-data-viz@latest install --force
 ```
 
-`--force` 会先把旧目录备份到技能父目录同级的 `.geo-data-viz-backups/`，再安装新版本，并打印备份位置。安装只复制 Skill 文件，不安装 Python 依赖、地图 SDK 或凭证。
+更新项目或自定义位置时，保留原来的目标参数：
 
-也可以直接从 GitHub 安装（目标目录应不存在）：
+```bash
+npx @floracat/geo-data-viz@latest install --project --force
+npx @floracat/geo-data-viz@latest install --dir /path/to/skills --force
+```
+
+已有目录默认不会被覆盖。`--force` 会先备份旧目录，再安装新版本，并打印备份位置；默认安装的备份位于 `~/.agents/.geo-data-viz-backups/`。如需预览目标与文件清单，在安装命令后加 `--dry-run`；预览更新时同时保留 `--force`。
+
+<details>
+<summary>从 GitHub 手动安装</summary>
+
+目标目录不存在时，可直接克隆：
 
 ```bash
 git clone https://github.com/FloraCat526/geo-data-viz.git "$HOME/.agents/skills/geo-data-viz"
 ```
 
-或下载仓库，将包含 `SKILL.md` 的整个目录放入技能目录。Skill 不依赖演示平台或视频工程。未显示时重新启动 Agent。
+也可以下载仓库，将包含 `SKILL.md` 的整个目录放入 Agent 的技能目录。
 
-## 使用
+</details>
 
-在对话中附上数据并调用：
+## 手动分析数据
 
-> 使用 $geo-data-viz 分析附件门店数据。坐标为 WGS84，用订单量生成气泡图，按区域筛选。使用我选择的地图平台和提供的 Key。
-
-Agent 会先分析数据与坐标系，确定指标和视觉表达，再生成本次数据的地图作品。无明确坐标系的表格不会仅凭数值猜测坐标系。只有地址时需另行完成有依据的地理编码。
-
-Python 3.10+ 可运行基础分析，无需额外依赖。Excel XLSX/XLSM 可在虚拟环境安装可选依赖：
+通常由 Agent 调用分析脚本。需要单独运行时，以下命令适用于默认安装位置：
 
 ```bash
-python3 -m pip install -r requirements-excel.txt
-```
-
-直接运行分析脚本：
-
-```bash
-python3 scripts/profile_geo.py /path/to/stores.csv --out-dir work/profile \
+python3 "$HOME/.agents/skills/geo-data-viz/scripts/profile_geo.py" \
+  /path/to/stores.csv --out-dir ./work/profile \
   --crs wgs84 --lng-field longitude --lat-field latitude --value-field orders
 ```
 
-## 目录
+将文件路径、坐标系和字段名替换为实际数据。项目或自定义安装需相应调整脚本路径。
 
-- [SKILL.md](SKILL.md)：工作流入口。
-- `bin/`：npm 安装命令。
-- `scripts/`：本地数据分析与规范化。
-- `assets/adapters/`：地图 SDK 接入辅助模块和近似坐标转换。
-- `assets/screenshots/`：README 效果展示截图。
-- [references/](references/)：数据契约、效果选择和各家地图参考。
-- `agents/`：Agent 界面元数据。
-- `tests/`：数据分析、坐标转换和模拟 SDK 回归测试。
+分析 Excel XLSX/XLSM 文件前，可在项目目录创建虚拟环境并安装可选依赖：
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -r "$HOME/.agents/skills/geo-data-viz/requirements-excel.txt"
+```
+
+安装命令仅复制 Skill 文件；Python 依赖、地图 SDK 和 Key 按具体任务配置。
+
+## Skill 内容
+
+| 路径 | 用途 |
+| --- | --- |
+| `SKILL.md` | 工作流入口 |
+| `scripts/` | 数据分析与规范化 |
+| `references/` | 数据契约、可视化选择与地图服务配置 |
+| `assets/adapters/` | 地图 SDK 接入辅助模块与近似坐标转换 |
+| `agents/` | Agent 界面元数据 |
+| `requirements-excel.txt` | Excel 分析的可选依赖 |
+
+仓库另含 npm 安装器 `bin/`、测试 `tests/` 和展示截图 `assets/screenshots/`。
