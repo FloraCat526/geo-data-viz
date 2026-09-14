@@ -11,7 +11,7 @@ const run=(cwd,...args)=>spawnSync(process.execPath,[cli,...args],{cwd,encoding:
 test('installs a complete standalone skill into a custom parent',async t=>{
  const cwd=await fixture(t),r=run(cwd,'install','--dir','custom skills');assert.equal(r.status,0,r.stderr);
  const dest=join(cwd,'custom skills/geo-data-viz');
- for(const file of ['SKILL.md','scripts/profile_geo.py','references/capabilities/amap.md','assets/adapters/providers.mjs','agents/openai.yaml','requirements-excel.txt'])await access(join(dest,file));
+ for(const file of ['SKILL.md','scripts/profile_geo.py','scripts/build_mapbox_html.py','references/mapbox-recipes.md','references/capabilities/amap.md','assets/adapters/providers.mjs','assets/recipes/mapbox-layers.mjs','agents/openai.yaml','requirements-excel.txt'])await access(join(dest,file));
  assert.match(await readFile(join(dest,'SKILL.md'),'utf8'),/name: geo-data-viz/);
  for(const excluded of ['.env.local','bin','assets/screenshots','.git','node_modules'])await assert.rejects(access(join(dest,excluded)));
 });

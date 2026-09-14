@@ -318,6 +318,57 @@ def area_km2(geometry):
     return 0
 
 
+def geometry_parts(geometry):
+    """Yield atomic geometry parts without changing source geometry or feature IDs."""
+    kind = geometry["type"]
+    if kind == "GeometryCollection":
+        for child in geometry["geometries"]:
+            yield from geometry_parts(child)
+    elif kind.startswith("Multi"):
+        for coordinates in geometry["coordinates"]:
+            yield {"type": kind[5:], "coordinates": coordinates}
+    else:
+        yield geometry
+
+
+def visualization_candidates(features, roles, part_counts, duplicate_locations):
+    """Unranked structural candidates; the agent still decides intent and units."""
+    result = []
+    def add(kind, status, reason, requires=()):
+        result.append({"type": kind, "status": status, "available": status == "eligible",
+                       "requires": list(requires), "reason": reason})
+    def metric_state(kind):
+        relevant = [f for f in features if any(g["type"] == kind for g in geometry_parts(f["geometry"]))]
+        values = [f["properties"]["__viz"]["value"] for f in relevant]
+        nums = [v for v in values if v is not None]
+        if not roles["value"]:
+            return "needs-transform", ["value-field"], nums
+        if not nums:
+            return "blocked", ["finite-metric-on-valid-geometry"], nums
+        return "eligible", [], nums
+    if part_counts["Point"]:
+        add("points", "eligible", "Equal-size locations; no numeric metric required. This list is not a ranking.")
+        status, requires, values = metric_state("Point")
+        add("point-color", status, "Map a confirmed intensity, rate or signed change to color; units determine the scale.", requires)
+        if values and min(values) < 0:
+            status, requires = "needs-transform", ["explicit-absolute-value-with-sign-encoding"]
+        add("bubble", status, "Area requires a nonnegative magnitude. Signed data needs an explicit transform and a separate sign channel; missing values stay separate.", requires)
+        add("cluster", "needs-transform", "Repeated point locations detected; retain access to all entities." if duplicate_locations else "Assess overlap at the intended viewport; feature count alone does not determine suitability.", ["confirm-point-grain-and-view-overlap"])
+        add("heatmap", "needs-transform", "Choose count density or valid nonnegative contribution weights explicitly; temperature and rates are not additive contributions.", ["confirm-count-grain-or-nonnegative-contribution"])
+        add("breathing-points", "needs-transform", "Optional emphasis for selected events or the user's visual preference; not a default analytical recommendation.", ["confirm-emphasis-meaning"])
+    if part_counts["LineString"]:
+        add("route-lines", "eligible", "Render existing vertices; distinguish actual paths from OD relations and do not invent direction or timestamps.")
+    if part_counts["Polygon"]:
+        add("area-outline", "eligible", "Display known boundaries without inventing a metric.")
+        status, requires, _ = metric_state("Polygon")
+        add("choropleth", status, "Use a meaningful area measure; rates require denominator-aware aggregation, and null remains missing.", requires)
+    for role in ("category", "time"):
+        if roles[role]:
+            add(f"{role}-filter", "eligible", "Use the bound source field; a time field alone does not imply a trajectory.")
+            result[-1]["field"] = roles[role]
+    return result
+
+
 def profile(path, out_dir, crs=None, fields=None, sheet=None):
     rows, root, source = load_input(path, sheet)
     source["fileName"] = path.name
@@ -349,6 +400,7 @@ def profile(path, out_dir, crs=None, fields=None, sheet=None):
         warnings.append("unknown_crs: numeric coordinate ranges cannot identify WGS84, GCJ-02 or BD-09; establish source provenance")
     invalid, features, all_points = [], [], []
     geom_counts, seen_records, seen_points, seen_ids = Counter(), Counter(), Counter(), Counter()
+    part_counts = Counter()
     coordinate_missing = root is None and not (roles["lng"] and roles["lat"])
     for index, row in enumerate(rows, 1):
         reasons = []
@@ -417,8 +469,10 @@ def profile(path, out_dir, crs=None, fields=None, sheet=None):
         features.append({"type": "Feature", "id": fid, "geometry": geometry, "properties": properties})
         geom_counts[geometry["type"]] += 1
         all_points.extend(points)
-        if geometry["type"] == "Point":
-            seen_points[tuple(points[0])] += 1
+        for part in geometry_parts(geometry):
+            part_counts[part["type"]] += 1
+            if part["type"] == "Point":
+                seen_points[tuple(part["coordinates"][:2])] += 1
     if not rows:
         status = "needs_coordinates"
         warnings.append("empty_dataset: no records found")
@@ -447,25 +501,16 @@ def profile(path, out_dir, crs=None, fields=None, sheet=None):
         times = [f["properties"]["__viz"]["time"] for f in features]
         if any(t is None for t in times):
             warnings.append("time_gaps: unparseable or missing timestamps remain null; epoch units and ambiguous dates need an explicit parser")
-    recommendations = []
-    if geom_counts["Point"] or geom_counts["MultiPoint"]:
-        recommendations.append({"type": "breathing-points", "reason": "Point locations support a shared animated point layer; use bounded pulse amplitude and a pause control."})
-        recommendations.append({"type": "bubble", "available": bool(roles["value"]), "requires": [] if roles["value"] else ["value-field"], "reason": "Encode a confirmed numeric measure with square-root radius so bubble area is proportional; retain a count-only point view if no measure exists."})
-        if len(features) >= 1000:
-            recommendations.append({"type": "cluster-or-density", "reason": "Many points can overlap; use clustering or an explicitly labeled count/weighted density view."})
-    if geom_counts["LineString"] or geom_counts["MultiLineString"]:
-        recommendations.append({"type": "route-lines", "reason": "Use actual line vertices; do not invent OD endpoints, journeys, direction, or timestamps."})
-    if geom_counts["Polygon"] or geom_counts["MultiPolygon"]:
-        recommendations.append({"type": "choropleth", "requires": [] if roles["value"] else ["value-field"], "reason": "Use existing area boundaries and a meaningful measure; rates and raw totals have different interpretations."})
+    duplicate_locations = sum(n-1 for n in seen_points.values())
+    recommendations = visualization_candidates(features, roles, part_counts, duplicate_locations)
+    if duplicate_locations:
+        warnings.append("overlapping_locations: multiple point parts share coordinates; preserve entity access and confirm counting grain before aggregation")
+    if part_counts["Polygon"]:
         warnings.append("polygon_validation_scope: ring structure and coordinate values checked; self-intersection/topology and ring orientation not certified")
         spatial["approxPolygonAreaKm2"] = sum(area_km2(f["geometry"]) for f in features) if data_crs == "wgs84" else None
         spatial["areaMethod"] = "spherical estimate, Earth radius 6371.0088 km; holes subtracted; not suitable for legal measurement" if data_crs == "wgs84" else "not calculated for unverified/non-WGS84 datum"
-    if roles["category"]:
-        recommendations.append({"type": "category-filter", "field": roles["category"]})
-    if roles["time"]:
-        recommendations.append({"type": "time-filter", "field": roles["time"], "reason": "Use parsed source timestamps; do not interpolate unobserved events."})
     warnings = list(dict.fromkeys(warnings))
-    counts = {"inputRecords": len(rows), "validFeatures": len(features), "invalidRecords": len(invalid), "geometryTypes": dict(geom_counts), "vertices": len(all_points), "duplicateRecords": sum(n-1 for n in seen_records.values()), "duplicatePointLocations": sum(n-1 for n in seen_points.values()), "uniquePointLocations": len(seen_points)}
+    counts = {"inputRecords": len(rows), "validFeatures": len(features), "invalidRecords": len(invalid), "geometryTypes": dict(geom_counts), "geometryParts": dict(part_counts), "vertices": len(all_points), "duplicateRecords": sum(n-1 for n in seen_records.values()), "duplicatePointLocations": duplicate_locations, "uniquePointLocations": len(seen_points)}
     metadata = {"schemaVersion": 1, "status": status, "dataCrs": data_crs, "roles": roles, "warnings": warnings, "source": source}
     result = {**metadata, "roleCandidates": candidates, "counts": counts, "invalidRows": invalid, "fields": stats, "spatial": spatial, "recommendations": recommendations}
     collection = {"type": "FeatureCollection", "metadata": metadata, "features": features}

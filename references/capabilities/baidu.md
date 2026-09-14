@@ -35,7 +35,7 @@ MapVGL 常见输入为含 `geometry` 与业务字段的数组，由 `View({map})
 
 用户要炫酷告警选 Point+Ripple，OD 选经过验证的 FlyLineLayer 路线，需要业务统计可核对时选面/共同格网；数据量大本身并不能证明要开启 Three 或3D。按真实时间回放必须另外核对所选轨迹图层的逐点时间契约；只有飞线动画能力时，不称为真实采样回放。
 
-MapVGL 与目标 JSAPI 兼容未确认时，保留当前版本能验证的基础点线面/Canvas 方案，并明确缺少的动画与3D效果。返回 [能力索引](index.md) 或 [匹配规则](../selection.md)。
+MapVGL 与目标 JSAPI 兼容未确认时，使用当前版本能验证的 JSAPI 原生点线面方案，并明确缺少的动画与3D效果。返回 [能力索引](index.md) 或 [匹配规则](../selection.md)。
 
 ## JSAPI 4.0 原生增强与实测边界
 

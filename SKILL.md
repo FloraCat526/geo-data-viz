@@ -1,6 +1,6 @@
 ---
 name: geo-data-viz
-description: Turn geographic files attached in an AI conversation into tailored interactive map visualizations. Analyze CSV, Excel, JSON, or GeoJSON, choose suitable visual effects, and generate a map using the user's selected Google Maps, Mapbox, Maptec, Baidu, AMap, or Tencent service and keys; support switching providers over the same dataset.
+description: Analyze geographic CSV, Excel, JSON, or GeoJSON attached in an AI conversation, choose suitable visualizations, and generate runnable HTML maps using the selected provider's native layers or official extensions first, with third-party or custom rendering when provider capabilities are insufficient. Support provider switching when requested.
 ---
 
 # 地理数据可视化 Skill
@@ -11,19 +11,19 @@ description: Turn geographic files attached in an AI conversation into tailored 
 
 > 分析附件门店数据，用订单数生成类似气泡图和呼吸点的效果，支持 Maptec 与高德切换；使用我提供的两家 Key。
 
-本 Skill 是独立能力包；同仓库附赠的演示平台用于体验与开发验证，不属于必经流程。
+本 Skill 是独立能力包，直接在 Agent 对话中完成分析与 HTML 交付。
 
 执行结果是这份数据的地图作品与简要分析。上传、字段识别、平台选择和必要澄清在 AI 对话里完成。不要把任务替换成开发通用可视化平台，也不要要求用户先进入固定工作台重新上传和配置。用户另有产品开发要求时，按其明确范围处理。
 
 ## 1. 分析上传数据
 
-- 找到本轮附件或用户指定文件，先运行 `scripts/profile_geo.py INPUT --out-dir WORK/profile`。CSV/TSV、JSON、GeoJSON 使用标准库；Excel 需要可用的 openpyxl。完整结果见 [数据契约](references/data-contract.md)。特殊空间格式或超大数据按需选择 GeoPandas、DuckDB 等，先核实环境。
+- 定位本轮附件、当前 Skill 的实际路径和可用 Python；路径含空格时引用完整路径。找到输入后先运行 `scripts/profile_geo.py INPUT --out-dir WORK/profile`。CSV/TSV、JSON、GeoJSON 使用标准库；Excel 需要可用的 openpyxl。完整结果见 [数据契约](references/data-contract.md)。特殊空间格式或超大数据按需选择 GeoPandas、DuckDB 等，先核实环境。
 - 识别点、线、面、轨迹或 OD 数据；识别经纬度/地址、规模指标、类别、时间与实体 ID。检查缺失、异常范围、重复、几何有效性和时间粒度。只读取必要样例与分析结果，不把完整数据倒进上下文。
 - 按用户目标、字段名称、单位和记录粒度确定角色。数量、比例、变化量使用不同映射；编号、邮编、年份、经纬度不能自动当规模指标。重复坐标不等于重复记录；缺失不填零。
-- 来源明确时直接绑定；确有歧义才在对话中简短询问，同时继续不依赖答案的分析。选定字段后复跑脚本，如：
+- 数据和目标明确时直接绑定并推进，不要求用户先选字段或图表。只询问会影响结果的关键缺项（如源坐标系、指标含义、Key）；已有上下文能确定的内容不再问，同时继续不依赖答案的工作。涉及 OD、轨迹、多表或区域关联时按需读 [数据转换配方](references/transforms.md)。选定字段后复跑脚本，如：
 
 ```bash
-python3 SKILL_DIR/scripts/profile_geo.py locations.csv --out-dir work/profile \
+python3 "SKILL_DIR/scripts/profile_geo.py" "locations.csv" --out-dir work/profile \
   --crs wgs84 --lng-field longitude --lat-field latitude \
   --value-field visits --label-field name --category-field type
 ```
@@ -32,18 +32,18 @@ python3 SKILL_DIR/scripts/profile_geo.py locations.csv --out-dir work/profile \
 
 ## 2. 确定地图与效果
 
-- 采用用户已选的 Google Maps、Mapbox、Maptec、百度、高德或腾讯。未选择时结合数据覆盖区域和用户目标给出简短建议，并收集仍缺少的选择；同一作品可支持所需平台切换，不要求一次配置全部六家。
+- 采用用户已选的图商；未指定时优先沿用本任务已授权且适用的配置，没有既定配置时建议 Mapbox 并继续生成，接入只收集缺失 Key 等必要配置。若区域或网络限制影响适用性，说明依据并选择可行路线。单图商保持简洁；只有用户要求时才加入多图商切换。
 - Key 使用用户明确提供的值或明确授权读取的项目配置。缺少 Key、Maptec 接入信息或高德安全配置时，在对话中一次说明所需项；先完成数据分析和页面代码，待接入后继续验收，不将无底图网格当作交付结果。
 - 按 [数据到效果的匹配规则](references/selection.md) 判断几何、记录粒度、指标单位/分母、时间与空间分布，先淘汰数据条件不成立的效果。再查 [六家能力索引](references/capabilities/index.md)，**阅读用户所选平台的能力文档**，将候选映射到具体类/图层、额外依赖、版本条件与降级路线，不仅停留在效果名称。
-- 推荐 1 个主方案及最多 2 个有区别的备选，说明它们如何回答用户问题。遵循 [视觉映射](references/visualization.md)；气泡、热力、网格、轨迹与3D高度不能因名字相近就互换。原生、官方扩展、第三方和自行组合分别标记；Demo 名称不是构造器，源码已有不等于目标部署已发布。
-- 在任务工作目录保留简短 `viz-plan.json` 或等价选型说明：数据依据、指标/聚合/固定域、所选 API 与证据、SDK/扩展版本、逐平台路线和待验证项，不包含 Key。跨平台严格比较时统一计算聚合/密度结果；各家默认热力或 cluster 不能直接当作数值等价。具体结构见匹配规则。
+- 脚本的 recommendations 是未排序的条件候选；eligible 只表示数据结构条件成立，needs-transform 需满足列出的条件，blocked 不可直接使用。由 AI 按用户目标判断，不能照抄第一项。推荐 1 个主方案及最多 2 个有区别的备选，说明它们如何回答用户问题。遵循 [视觉映射](references/visualization.md)；气泡、热力、网格、轨迹与3D高度不能因名字相近就互换。优先选择当前图商原生图层或官方可视化扩展，能力不足时按渲染归属规则补充；Demo 名称不是构造器，源码已有不等于目标部署已发布。
+- 在任务工作目录保留简短 `viz-plan.json` 或等价选型说明：数据依据、指标/聚合/固定域、所选 API 与证据、SDK/扩展版本、逐平台路线和待验证项，不包含 Key。每条路线记录 rendererOwner（provider-native / provider-official-extension / third-party / custom）、具体图层类或 type、挂载 API 和图层 ID；采用补充渲染时记录 fallbackReason、能力缺口依据、库/版本与限制，不冒充原生能力，也不静默换图商。跨平台严格比较时统一计算聚合/密度结果；各家默认热力或 cluster 不能直接当作数值等价。具体结构见匹配规则。
 - 以用户给的 Demo 作为视觉参考。可采用暗色底图、发光核心、呼吸光晕、连续/分级色阶，但颜色、面积、速度与业务含义要对应；不能沿用其他数据的阈值。样式和布局围绕本次数据设计。
 
 ## 3. 生成这份数据的地图作品
 
-依据上述选型结果，读取 [跨地图接入](references/providers.md) 与 [生成与验收](references/generation.md)，核实本次 SDK 版本与能力。选择公开原生覆盖物、官方扩展、第三方图层或自绘实现；接口有文档依据仍需验证用户环境，不把能力清单当已实现的模板库。
+依据上述选型结果，读取 [跨地图接入](references/providers.md) 与 [生成与验收](references/generation.md)，核实本次 SDK 版本与能力。数据可视化优先通过所选图商的公开原生图层/覆盖物或官方可视化扩展实现；图商不支持目标效果时，允许用独立 Canvas、deck.gl、ECharts 等第三方或自定义实现补充。先核实能力缺口并简述补充方案，信息明确时直接执行，无需为这种补充重复询问。通过 SDK 原生图层的属性更新组合动画可以使用；官方 custom-layer 接口或官方推荐第三方库本身不等于图商实现了该效果。具体边界与逐图层验收见 [渲染归属](references/provider-rendering.md)。接口有文档依据仍需验证用户环境，不把能力清单当已实现的模板库。
 
-- 生成独立页面或在用户指定项目中实现；默认直接加载已分析的数据，打开即看到该数据。仅添加本次有用的图例、详情、筛选、时间控制、效果切换和地图供应商切换。页面采用用户语言。
+- 默认交付 `map.html`，内嵌本次必要数据、样式与业务脚本；SDK/底图仍可联网。需 HTTP 或外部资源时交付完整目录与启动命令，具体见生成指南。用户指定现有项目时按其要求实现；默认直接加载已分析的数据，打开即看到该数据。仅添加本次有用的图例、详情、筛选、时间控制、效果切换和地图供应商切换。页面采用用户语言。
 - 使用统一数据模型和稳定 ID；数据分析、字段绑定和聚合只做一次。切换地图保留指标、图例尺度、筛选、时间、选中项与地理范围，各家底图可有不同风格。
 - 原始坐标保留不变，在适配器边界生成目标坐标副本。不能从数值范围猜 WGS84/GCJ02/BD09；未知 CRS 可继续代码与分析，在明确前不把点叠到真实底图。RFC 7946 GeoJSON 默认 WGS84，自声明 CRS 或投影米制坐标需另行处理。
 - 只有地址时先确定地区和所选地理编码服务，记录匹配置信度及失败项，不编造坐标。外部地理编码按已授权的数据和目的服务执行；授权不覆盖时说明具体传输与服务再询问。服务返回内容的跨地图使用限制按当前条款核查。
@@ -52,7 +52,7 @@ python3 SKILL_DIR/scripts/profile_geo.py locations.csv --out-dir work/profile \
 
 ## 4. 验证并交付
 
-- 实际启动作品并在浏览器检查真实底图与数据层。核对已知位置、缩放拖动对齐、数值图例、筛选、拾取、暂停、空结果及目标屏幕布局。
-- 对用户已提供 Key 的地图执行 A→B→A 切换，检查相同数据、坐标和状态；新地图就绪后替换旧实例，失败保留当前视图。清理旧事件、动画、图层和地图，防止迟到回调覆盖新状态。不同平台 zoom 数字不等价，按地理范围恢复。
+- 按每层声明的渲染来源检查创建、注册、更新与拾取；原生层核对 SDK/官方扩展，补充层核对能力缺口及其实际渲染器。SDK 内部使用 Canvas/WebGL 是正常实现，不能仅凭页面有 canvas 判定。再检查切换图商按目标能力选择并接入对应数据层，原生可用时恢复原生实现。有浏览器工具时实际启动作品并检查真实底图与数据层；宿主没有浏览器时完成可执行检查并标记视觉验收待验证，不假称通过。核对已知位置、缩放拖动对齐、数值图例、筛选、拾取、暂停、空结果及目标屏幕布局。
+- 仅对用户要求的多图商作品、且已有 Key 的地图执行 A→B→A 切换，检查相同数据、坐标和状态；新地图就绪后替换旧实例，失败保留当前视图。清理旧事件、动画、图层和地图，防止迟到回调覆盖新状态。不同平台 zoom 数字不等价，按地理范围恢复。
 - 用户要求的效果实现并验证后再交付，不把地图选项存在、SDK script 加载成功或代码编译成功当作底图验收。无法用真实 Key 验证的部分明确标出。
 - 提供地图作品链接、可运行源文件和启动方式，简述数据发现、效果选择及实际使用的各家图层；更新选型说明中的验证状态，明确仍未验证的路线。没有用户发布要求时，不自动公开或上传其数据。

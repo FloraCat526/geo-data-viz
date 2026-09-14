@@ -1,33 +1,28 @@
 # Google Maps：数据可视化选型
 
-核查：2026-09-13，Maps JavaScript API 官方文档与 deck.gl 官方文档。以下为有文档依据的实现路线，未用真实 Key 验收。接入、CRS 和清理见 [公共接入约定](../providers.md)。
+核查：2026-09-14，Maps JavaScript API 官方文档。优先采用 JSAPI 原生能力和官方维护扩展，能力缺口可由第三方/自绘补充；尚未用真实 Key 验收。接入与清理见 [公共接入](../providers.md)，所有路线遵守 [渲染归属](../provider-rendering.md)。
 
 ## 能力与数据匹配
 
-| 效果 / 适用数据 | 接口与来源 | 映射与选择要点 | 限制 / 备选 |
-|---|---|---|---|
-| 位置、分类点、可点击业务点 | 原生 `AdvancedMarkerElement`；`Data` 点 | 分类颜色/图标；数量气泡可用自定义圆形 DOM | Advanced Markers 需 marker 库和 map ID；大量 DOM 点先评估，批量 GPU 可选第三方 ScatterplotLayer。[标记接入](https://developers.google.com/maps/documentation/javascript/advanced-markers/start) |
-| 数量气泡、告警呼吸 | DOM/Canvas 组合，或第三方 `ScatterplotLayer` | 半径按数量平方根；稳定核心与动画外环分开 | 不是 Google 内置 BubbleChart/BreathingPoints 类；圈的动画由任务实现，暂停可用静态核心。[自定义覆盖物](https://developers.google.com/maps/documentation/javascript/customoverlays) |
-| 点聚合、缩放展开 | 官方维护扩展 `@googlemaps/markerclusterer` | 降低重叠；cluster 数为记录数，业务汇总需自定义 | 不等同于分析用的固定网格；大规模批量渲染另评估。[聚合指南](https://developers.google.com/maps/documentation/javascript/marker-clustering) |
-| 自有 GeoJSON 点线面 / 分级设色 | 原生 `google.maps.Data`、`addGeoJson`、`setStyle` | 属性驱动颜色、线宽与选中态；用户已有区域边界优先 | 业务指标先按稳定 ID 关联，别重新拿地名猜边界。[Data 层](https://developers.google.com/maps/documentation/javascript/datalayer) |
-| 官方行政区边界设色 | 原生 DDS boundaries、`getFeatureLayer` | 地域匹配到对应 place ID，再按指标设色 | 需矢量 map ID、启用对应边界层和区域覆盖；缺条件时用自有边界 Data。[DDS 条件](https://developers.google.com/maps/documentation/javascript/dds-boundaries/start) |
-| 事件密度 / 加权热力 | 第三方 `HeatmapLayer` + `GoogleMapsOverlay` | 位置与非负权重；配置带宽、颜色、聚合与固定域 | **旧 Google HeatmapLayer 已退出，不能新用**；CPU/自行 Canvas 热力可作有标识备选。[Google 替代示例](https://developers.google.com/maps/documentation/javascript/examples/deckgl-heatmap)、[deck.gl 热力](https://deck.gl/docs/api-reference/aggregation-layers/heatmap-layer) |
-| 方格 / 蜂窝汇总 | 第三方 `GridLayer` / `HexagonLayer`，或预计算面 + Data | 点计数、金额求和、均值需明确选择；跨平台严格比较预计算 | 不把第三方聚合说成 Google 原生；统计值保留详情。[deck.gl 聚合](https://deck.gl/docs/api-reference/aggregation-layers/hexagon-layer) |
-| 道路 / 实际轨迹线 | 原生 `Polyline` 或 Data | 输入已有的有序 LineString，宽度/颜色编码 | 只有 OD 时只能绘关系线；路线服务和可视化是不同步骤。[线与形状](https://developers.google.com/maps/documentation/javascript/shapes) |
-| OD 弧线、迁徙关系 | 第三方 `ArcLayer` 或自定义线几何 | 起点、终点、流量映射线宽；弧高通常是装饰 | ArcLayer 本身不等同于移动飞线；流动亮点要另实现。[ArcLayer](https://deck.gl/docs/api-reference/layers/arc-layer) |
-| 有时间的车辆回放 | 第三方 `TripsLayer` 或自行调度位置/折线 | 每实体路径 + 同步时间戳；时间进度统一 | 时间戳要满足图层数值精度，不能直接塞毫秒 epoch；缺时间可画静态路径。[TripsLayer](https://deck.gl/docs/api-reference/geo-layers/trips-layer) |
-| 柱体、建筑拉伸、自定义 3D | 第三方 Column/Polygon 图层或原生 `WebGLOverlayView` 组合 | 物理高度与指标高度分清；需要共享场景时核实矢量模式 | WebGLOverlayView 需矢量地图；二维 Canvas 无遮挡能力；降级到气泡/面色阶。[WebGL](https://developers.google.com/maps/documentation/javascript/webgl/webgl-overlay-view) |
-| 实际距离范围 / 圆形围栏 | 原生 `Circle`、`Polygon` | Circle 半径是地面米数；这是距离范围 | 不能把米半径直接当屏幕气泡半径；没有服务分析时不称为通勤可达圈。[形状](https://developers.google.com/maps/documentation/javascript/shapes) |
+| 效果 / 数据 | 对应能力 | 条件与限制 |
+| --- | --- | --- |
+| 位置、分类点 | 原生 AdvancedMarkerElement 或 Data 点 | Advanced Markers 需要 marker 库和 map ID；图标/样式由对应标记管理。大量标记要实测。[接入](https://developers.google.com/maps/documentation/javascript/advanced-markers/start) |
+| 点线面属性表达、区域设色 | 原生 google.maps.Data，addGeoJson / setStyle | 数据进入 Data 层，样式按属性决定；已有边界优先。点符号按当前 Data.StyleOptions.icon 契约核查，不引入独立散点渲染器。[Data](https://developers.google.com/maps/documentation/javascript/datalayer)、[StyleOptions](https://developers.google.com/maps/documentation/javascript/reference/data#Data.StyleOptions) |
+| 点聚合、展开 | 官方维护扩展 @googlemaps/markerclusterer | 聚合数默认是标记数，不是销售额；额外扩展需记录版本。[官方指南](https://developers.google.com/maps/documentation/javascript/marker-clustering) |
+| 官方行政区边界设色 | DDS boundaries、getFeatureLayer | 要求矢量 map ID、启用对应边界及区域覆盖；条件不具备时用已有边界 Data。[条件](https://developers.google.com/maps/documentation/javascript/dds-boundaries/start) |
+| 路径、OD 关系、方向提示 | 原生 Polyline / Data；Polyline icons 符号 | 按已有顶点绘制。可通过公开 icons 属性更新符号位置形成组合动画，注明并非内置飞线；OD 直连不能冒充道路路径。[形状](https://developers.google.com/maps/documentation/javascript/shapes)、[符号与动画](https://developers.google.com/maps/documentation/javascript/symbols) |
+| 时间轨迹 | 按时间更新原生标记与 Polyline | 先实体内排序与分段；SDK 负责绘制，Agent 仅调度数据。没有内置尾迹能力的证据时不承诺该效果 |
+| 实际距离范围 | 原生 Circle / Polygon | Circle 半径是地面米数，不可把 px 气泡半径直接传入；不是自动计算的通勤可达圈。[形状](https://developers.google.com/maps/documentation/javascript/shapes) |
+| 方格/蜂窝统计 | 分析端预计算面 + 原生 Data | 固定网格和计数/求和/比率口径后绘制；准确称作网格统计，不称 Google 原生 HexagonLayer |
 
-## 关键实现约束
+## 连续热力和其他缺口
 
-- 原生、第三方和自绘分别加载。采用 deck.gl 时记录 core、layers、google-maps 等匹配版本；官方示例中的旧版本号不是本项目锁定版本。
-- `GoogleMapsOverlay` 的矢量模式可共享 WebGL2 场景，支持倾斜旋转与建筑遮挡；栅格模式不能承诺相同 3D 效果。先确定渲染模式，再决定高度、拾取与交互方案。[集成说明](https://deck.gl/docs/api-reference/google-maps/overview)
-- `google.maps.visualization.HeatmapLayer` 在 2025-05 弃用，并于 2026-05 发布的后续版本移除。即使旧示例页面仍存在，也不能作为新实现的依据。[官方弃用说明](https://developers.google.com/maps/deprecations)
-- 大范围区域统计若需云端 datasets 工作流，应另核实上传与服务配置；普通附件任务优先本地 Data/第三方图层，不默认上传原始数据到供应商后台。
+Google 官方已说明旧 `google.maps.visualization.HeatmapLayer` 自 2026-05 不可用。其推荐的 deck.gl 是第三方实现，可用于补充这一能力缺口；需标为 third-party，并验证匹配版本的 HeatmapLayer 与 GoogleMapsOverlay 集成。[弃用说明](https://developers.google.com/maps/deprecations#heatmap-layer-deprecated-as-of-may-27-2025)
 
-## 给 Agent 的选择建议
+用户问“哪里集中”时按目标选择聚合、网格或连续热力。需要连续热力时，可直接评估 deck.gl 或自绘补充并说明非原生来源，无需重复询问是否允许补充；仍禁止使用已退出的旧 API。若用户额外限定“只能原生”，则尊重该限制并说明可选原生替代。
 
-少量可交互门店使用原生标记/自定义圆形即可；用户要密度、批量 OD 或复杂 3D 时评估 deck.gl；已有多边形优先 Data，只有地域编码且满足 DDS 条件才选官方边界。没有专门 3D 热力方案时，不把二维 HeatmapLayer 的颜色场说成起伏曲面。
+当前清单未核实符合本范围的专用呼吸点、指标柱拉伸、3D 热力曲面或批量 3D 弧线。可评估第三方 ArcLayer/TripsLayer、柱体等或自定义实现，并核验集成、遮挡与投影。WebGLOverlayView 是自定义渲染接入接口，不是这些效果的实现；补充成功也不能标为 Google 原生支持。目标版本如提供新的官方能力，取得对应文档、数据契约和运行证据后再加入。
 
-运行时核对底图模式、map ID、扩展存在性、层销毁、动画暂停和 A→B→A 状态，再按 [匹配规则](../selection.md) 记录实际验证状态。
+## 实现检查
+
+优先让业务数据进入 Google 原生实例或官方扩展；补充方案按实际库的 API 实现详情/筛选，并记录 rendererOwner、fallbackReason 和匹配版本。自有边界无需默认上传云端 datasets；确需云服务时另核查授权。实例和事件逐一清理；Google 无通用公开 Map.destroy，不猜造接口。

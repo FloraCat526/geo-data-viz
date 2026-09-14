@@ -1,3 +1,5 @@
+// Legacy north-up 2D loading/projection adapter retained for existing consumers.
+// Not a visualization renderer. Prefer provider-native layers/official extensions; verified capability gaps may use fallback rendering.
 import { CRS, validateCoordinate } from './coords.mjs';
 
 // SDK globals live for the page lifetime. Keys are held in memory only and never logged.

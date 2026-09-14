@@ -34,12 +34,12 @@ Exit code `0` means the analysis ran, including actionable incomplete states. It
 | `source` | Input filename, content SHA-256, format/encoding, sheet metadata when relevant, and original CRS declaration when present. |
 | `roles` | Resolved `lng`, `lat`, `value`, `label`, `category`, `time` field names, otherwise `null`. |
 | `roleCandidates` | Candidate columns, including `address`; hints for interpretation, not an assertion of business semantics. |
-| `counts` | Input/valid/invalid counts, geometry types, vertex counts, duplicate records and duplicate point locations. |
+| `counts` | Input/valid/invalid counts, top-level geometry types, recursively expanded geometryParts, vertex counts, duplicate records and duplicate point locations (including multipart/collection point parts). |
 | `invalidRows` | Every excluded record's row index and reasons; source feature ID if present. |
 | `fields` | Per-column missing/nonmissing, finite numeric count, unique count, identifier hint, quantiles, limited top values, and parsed time ranges. |
 | `spatial` | Conventional and antimeridian-aware bounds, center, zero-point/polar counts, optional rough WGS84 polygon area. |
 | `warnings` | Actionable qualifications including metric/time gaps and nonstandard CRS. |
-| `recommendations` | Data-supported visualization candidates and unmet prerequisites. |
+| `recommendations` | Unranked structural candidates: status eligible / needs-transform / blocked, requires, reason; available is true only for eligible. Eligibility does not certify business semantics, CRS readiness or runtime support. |
 
 State meanings:
 
@@ -95,3 +95,5 @@ Source properties remain available; invalid JSON nonfinite property values becom
 Bind one canonical dataset to all providers. If a provider requires another datum, derive a temporary provider-specific geometry copy using a verified transformation and retain the source dataset unchanged. Preserve feature IDs and `__viz` through transformations. Provider switching must not redo aggregation, mutate source coordinates, or change metric scales without an explicit user change.
 
 `spatial.bounds` is `[minLng,minLat,maxLng,maxLat]`. `wrappedBounds` is `[west,south,east,north]` over the smallest longitude arc; `west > east` means it crosses the antimeridian. Use wrapping-aware bounds/center in the viewport controller. A naive fit of `[-179,...,179,...]` otherwise shows most of the world.
+
+Point parts are counted separately from records: expanding MultiPoint must not silently multiply a per-record metric. Candidate metric validity is evaluated on valid geometries of that type, not on rejected rows. A signed magnitude needs explicit absolute-value/sign encoding; binding a field containing no valid numbers does not enable bubbles. Clustering always needs an entity/counting rule and a view-overlap assessment.

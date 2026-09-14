@@ -121,6 +121,7 @@ python3 -m pip install -r "$HOME/.agents/skills/geo-data-viz/requirements-excel.
 | `scripts/` | 数据分析与规范化 |
 | `references/` | 数据契约、可视化选择与地图服务配置 |
 | `assets/adapters/` | 地图 SDK 接入辅助模块与近似坐标转换 |
+| `assets/recipes/` | Mapbox 原生图层配方，由 HTML 生成脚本内嵌或在作品中复用 |
 | `agents/` | Agent 界面元数据 |
 | `requirements-excel.txt` | Excel 分析的可选依赖 |
 

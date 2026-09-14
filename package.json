@@ -4,7 +4,7 @@
   "description": "An independent AI agent skill for analyzing geographic data and generating interactive maps.",
   "type": "module",
   "bin": { "geo-data-viz": "bin/geo-data-viz.mjs" },
-  "files": ["SKILL.md", "agents/*.yaml", "scripts/*.py", "references/**/*.md", "assets/adapters/*.mjs", "requirements-excel.txt", "bin/*.mjs"],
+  "files": ["SKILL.md", "agents/*.yaml", "scripts/*.py", "references/**/*.md", "assets/adapters/*.mjs", "assets/recipes/*.mjs", "requirements-excel.txt", "bin/*.mjs"],
   "engines": { "node": ">=20" },
   "scripts": { "test": "node --test tests/*.test.mjs" },
   "repository": { "type": "git", "url": "git+https://github.com/FloraCat526/geo-data-viz.git" },

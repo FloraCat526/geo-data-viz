@@ -1,46 +1,41 @@
 # 按数据生成地图作品
 
-这个 Skill 可以单独安装运行。仓库的 `demo/` 是可选演示平台，展示核心能力和数据效果，不是 Skill 的运行依赖。Agent 每次根据附件、用户问题和所选平台生成适合该数据的作品；代码辅助资源用于降低接入错误，不规定 UI。
+这个 Skill 可以单独安装运行。运行不依赖演示平台。Agent 每次根据附件、用户问题和所选平台生成适合该数据的作品；代码辅助资源用于降低接入错误，不规定 UI。
 
 ## 一次任务的实现顺序
 
 1. 读取 profile.json，确认有效/无效记录、源 CRS、绑定指标与几何类型。
 2. 按 [数据匹配规则](selection.md) 与 [所选平台的能力文档](capabilities/index.md) 形成选型说明。定义本次 visualSpec：指标字段、单位、颜色/面积/宽度映射、阈值、动画含义、筛选与图例。跨平台共用同一 spec，过滤时不偷偷重算色阶。
-3. 按选型说明的具体 API/扩展与版本实现。每家可以使用不同底层图层，保持业务映射一致；能力清单是生成依据，不是已内置的运行时图层注册表。只有二维共同效果才直接复用下方 Canvas 适配路线。
+3. 按选型说明的具体 API/扩展与版本实现。每家可以使用不同底层图层，保持业务映射一致；能力清单是生成依据，不是已内置的运行时图层注册表。每个数据层都需满足 [渲染归属](provider-rendering.md)，不能把共用 Canvas 作为默认路线；仅当对应图商能力不足时采用有依据的补充方案。
 4. 生成的页面直接读取该数据与已授权的运行配置。若用户选择多个地图，加入简洁的切换控件；单平台作品不必出现六家按钮、Key 管理后台或再次上传入口。
 5. 按数据范围设置相机，加载成功后绘制，保存同一份业务状态。连接失败给出具体可处理的信息。验证实际结果后交付。
 
-## 可选的接入辅助代码
+## HTML 交付
 
-`assets/adapters/providers.mjs` 提供六家 SDK 的按需加载、Key 绑定、生命周期及屏幕投影封装；`coords.mjs` 提供显示级近似坐标转换。仅在这些接口和目标版本确实合适时复制到产物，不必使用，也不包含网页、样例数据、上传器、Key 表单或效果渲染器。
+中小数据默认交付 `map.html`：内嵌必要数据、CSS 和业务 JavaScript，直接呈现用户附件。远程 SDK、字体、底图仍可能需要网络；独立文件不等于离线。确认 SDK、模块和 Key 来源限制是否允许 `file://`，不能承诺任意环境双击即用。
 
-```js
-import { createProvider, getProviderCrs } from './adapters/providers.mjs';
-import { transformCoordinate } from './adapters/coords.mjs';
+需要 fetch 外部文件、模块导入或数据较大时，交付 `index.html` 与完整依赖目录，使用实际可用的 Python 启动，例如 `python3 -m http.server 8000 --bind 127.0.0.1 --directory OUTPUT_DIR`，给出本次端口和 URL。输出目录不包含无关文件或私密配置，避免通过本地服务暴露。
 
-const targetCrs = getProviderCrs(providerName, runtimeConfig);
-const adapter = await createProvider(providerName, mapElement, runtimeConfig, {
-  center: transformCoordinate(sourceCenter, sourceCrs, targetCrs),
-  zoom: initialZoom
-});
-// screenPoint 可用于适合本次作品的自定义视觉层。
-const screenPoint = adapter.project(
-  transformCoordinate(sourcePosition, sourceCrs, adapter.dataCrs)
-);
-// 保存并调用 unsubscribe，作品卸载时调用 adapter.destroy()。
-const unsubscribe = adapter.onChange(renderVisualization);
-```
+- Key 仅从用户已授权的值或指定配置读取。浏览器无法直接读取 shell 环境变量；需要生成时注入已授权浏览器 Token，或由明确的运行配置提供。服务端 secret 不进入前端。包含 Token 的 HTML 是本地产物，分享前移除。
+- 内嵌 JSON 转义 `<`，避免数据里的 `</script>` 结束脚本；上传文本用 textContent 等安全文本方式显示。只带展示所需字段，避免无关个人数据随 HTML 外发。
+- 保留图例单位、固定数值域、缺失编码、数据来源与必要统计说明。最终回复给出 HTML 链接、启动方式、主要发现、选图理由和验证状态；profile 与选型说明留在工作目录。
+- 缺 Key 时完成数据与代码，显示具体待接入原因；不能把空网格当地图。宿主无浏览器时标记视觉验收未完成。
 
-`runtimeConfig` 的字段由平台决定：`key`、高德 `securityJsCode/securityServiceHost/showOversea`、Maptec `sdkUrl/cssUrl/dataCrs`，以及可选 `style/mapId`。高德海外数据设置布尔值 `showOversea: true`，适配器会将其传给 `AMap.Map`；未设置或设为 `false` 时不开启。Key 仍需具备世界地图权限，开关和 `complete` 事件不代表真实海外底图已通过验收。只有用户指定的平台加载 SDK。Key 绑定的 SDK 再换 Key 时可能需要独立 iframe 或页面重载；适配示例会明确拒绝不安全的重绑定。
+## Mapbox 原生配方
 
-接口：`project([lng,lat]) → {x,y}`、`getView() → {center,zoom}`、`setView(view)`、`onChange(callback) → unsubscribe`、`destroy()`、`dataCrs`。输入坐标已经是该平台所需 datum，project 不再转换。CSS 像素和 Canvas DPR 分开处理。
+Mapbox 常用点、气泡、聚合、热力、线和面可按需使用 [原生配方](mapbox-recipes.md)。`assets/recipes/mapbox-layers.mjs` 提供可组合图层与生命周期，`scripts/build_mapbox_html.py` 将规范化数据和显式 visualSpec 打包为单个 HTML。它们是可修改的起点；布局与选型仍由 Agent 决定，不是所有图商和效果的固定模板。
 
-限制：这些辅助模块面向北向 2D，zoom 是各家原生数值，跨家只近似同尺度。Maptec 当前本地 SDK 的 project 被官方示例使用但源码标私有，优先核实公开原生覆盖物；不要把该封装当稳定公共 API 保证。3D、地形、原生热力等按本次平台另行实现。坐标换算是近似公式与粗略地理边界，不能声称测绘精度，境外/边界数据需要明确来源契约。
+## 历史接入辅助代码的边界
+
+`assets/adapters/providers.mjs` 是保留兼容旧作品的北向二维 SDK 加载/投影封装，不包含各家原生数据图层，也未提供完整原生图层接入接口。它本身不是数据渲染器；原生路线不能照搬 project → 自绘流程。能力不足需要二维 Canvas 补充时，可核验这些接口后复用；当前封装锁定北向二维且 Maptec 涉及私有投影，不适合直接作为通用 3D/全平台补充层。新作品优先创建所选 SDK 地图及该图商的数据层，Mapbox 可用上方原生配方，其他图商按对应能力文档实现。
+
+`assets/adapters/coords.mjs` 的坐标转换可按来源契约单独复用，它是数据准备而非渲染；近似公式不能声称测绘精度。高德海外数据须设置 showOversea: true 并核验 Key 权限；开关或 complete 事件不等于真实海外地图可见。跨图商视野按地理范围恢复，不复制各家的 zoom 数字。
 
 ## 验收重点
 
 - 分析：有效数 + 无效数可核对；数值零/负值/缺失不同；同坐标不同实体保留；多点/多线/多面正确展开；不将地址或轨迹缺口补造为坐标。
 - 表达：气泡面积与数量一致，缺失单独编码；图例单位和阈值准确；重叠点能访问详情；线面和 OD 连线含义明确；日期线与 Web Mercator 极区处理有依据。
+- 归属：保存所选 SDK/官方扩展、具体图层类/type/ID 与挂载调用；原生数据进入该图商 source/layer；补充层记录 fallbackReason 与真实库/类，验证相机同步、拾取、清理。切图商重新判断原生能力；双方都有缺口时可复用经适配验证的补充层，但不能据此声称原生互切。
 - 接入：真实底图可见，已知点位正确，缩放与拖动无漂移，标识未被遮挡；Key/网络/配额失败能理解和恢复。
 - 切换：数据 ID、字段、筛选、图例、选择及地理范围保留；旧实例清理，迟到请求不覆盖新状态。
 - 交互：暂停/后台恢复、空结果、窗口 resize 和所需屏幕尺寸；大数据性能按实际设备评估，不套固定点数上限。

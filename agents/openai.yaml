@@ -1,4 +1,4 @@
 interface:
   display_name: "多地图地理数据可视化"
-  short_description: "分析上传的地理数据，生成可切换六家地图的交互式可视化"
-  default_prompt: "使用 $geo-data-viz 分析我上传的地理数据，根据所选地图平台和我提供的 Key，生成可切换底图的交互式地理可视化。"
+  short_description: "分析上传的地理数据，选择合适的地图表达并生成可运行的 HTML 文件"
+  default_prompt: "使用 $geo-data-viz 分析我上传的数据，选择最合适的地理可视化形式，使用所选图商和已授权 Key 生成可运行的 HTML。"

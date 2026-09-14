@@ -1,6 +1,6 @@
 # 从数据到地图效果的匹配规则
 
-本文件指导 Agent 作出并解释选择；`profile_geo.py` 提供数据证据，不是自动理解业务或自动判定所有 SDK 能力的分类器。不要仅根据文件后缀、点数或出现一个数值列就定图。
+本文件指导 Agent 作出并解释选择；`profile_geo.py` 提供数据证据，不是自动理解业务或自动判定所有 SDK 能力的分类器。不要仅根据文件后缀、点数或出现一个数值列就定图。recommendations 不排序，eligible 是结构可用而非业务最优；needs-transform 的条件未落实前不可当成现成效果，blocked 不能直接生成。数据转换见 [配方](transforms.md)。
 
 ## 1. 先形成数据事实
 
@@ -46,14 +46,14 @@
 
 只有满足必要条件的候选才按“回答业务问题的程度 → 可读性与交互 → 运行成本 → 用户视觉偏好”排序。选择 1 个主方案和最多 2 个有实质区别的备选；不要用没有依据的精确分数、固定点数阈值或厂商优劣榜。
 
-优先利用适合本任务的公开原生/官方扩展能力。用户只要二维且要求视觉一致时可共用 Canvas；需要飞线遮挡、倾斜、批量 GPU 渲染时按平台选层，不能为了适配方便全部降成屏幕 Canvas。
+优先选择当前图商公开原生层/覆盖物或官方扩展。缺少目标效果时，按 [渲染归属](provider-rendering.md) 评估第三方库或独立 Canvas/WebGL 补充；记录实际缺口、补充来源和限制，保持所选图商与数据语义。数据分析、聚合和视觉映射可共用，渲染按目标图商逐层决策，不能因统一适配方便跳过已有原生能力。已明确可行的补充方案直接执行；全部路线仍不满足时再说明具体缺项。
 
 ## 4. 固定映射，再实现切换
 
 - 在源 CRS 或明确的分析 CRS 下计算一次聚合与指标，渲染前再派生目标 CRS 坐标。境内外混合数据不可盲目批量加偏移。
 - 气泡固定全量的面积域；颜色固定类别/阈值；筛选与切图不自动重标色。绘图大小区分半径/直径以及 px/meter。
 - 严格比较网格时固定网格定义、大小、原点、CRS、成员和聚合函数，输出共同面数据。屏幕聚合仅用于浏览，可以随 zoom 改变成员，但不要称作稳定统计区域。
-- 原生热力的核函数、带宽、归一化、累加和颜色曲线不同。同一批点、同一个最大值，并不能证明热力数值逐像素等价。要求严格比较时统一生成密度场或改用共同统计网格。
+- 原生热力的核函数、带宽、归一化、累加和颜色曲线不同。同一批点、同一个最大值，并不能证明热力数值逐像素等价。要求严格比较时改用共同统计网格并由各家原生面层绘制，明确其为网格统计而非连续热力。
 - 3D/动画增强可因平台不同而变化，但保留同一业务指标、筛选与详情；没有对应层时显示实际降级效果及原因。
 
 ## 5. 保留一份简短可检查的选型结果
@@ -69,8 +69,8 @@
   "secondary": [{"effect": "pulse", "reason": "仅对有明确告警等级的点强调"}],
   "encoding": {"size": "area", "domain": "full-dataset-fixed", "color": "category"},
   "routes": [
-    {"provider": "maptec", "api": "GeoJSONOverlay.circleStyle", "basis": "source-verified", "status": "pending-runtime"},
-    {"provider": "amap", "api": "Loca.PointLayer", "basis": "official-doc", "status": "pending-runtime"}
+    {"provider": "maptec", "api": "GeoJSONOverlay.circleStyle", "rendererOwner": "provider-native", "basis": "source-verified", "status": "pending-runtime"},
+    {"provider": "amap", "api": "Loca.PointLayer", "rendererOwner": "provider-official-extension", "basis": "official-doc", "status": "pending-runtime"}
   ],
   "comparison": {"level": "same-business-metric", "fallback": "2d-bubble"},
   "rejected": [{"effect": "heatmap", "reason": "会混合相邻门店，不能作为单店比较的主图"}]
@@ -86,7 +86,7 @@
 | 请求 / 数据 | 应产生的判断 |
 |---|---|
 | 上传门店订单 CSV，选择 Maptec + 高德，要求气泡与呼吸 | 分析零值/缺失/重叠；气泡走 GeoJSONOverlay 与 Loca.PointLayer；呼吸走 CircleOverlay 组合与 Loca.ScatterLayer；固定面积域 |
-| 选择 Google，要展示订单集中区 | 核实每行订单计数；用受支持的第三方 HeatmapLayer 或自行实现；禁止生成旧 google.maps.visualization.HeatmapLayer |
+| 选择 Google，要展示订单集中区 | 核实每行订单计数；Google 旧 HeatmapLayer 已退出，可评估 deck.gl HeatmapLayer + GoogleMapsOverlay 或自绘热力补充；记录非原生来源和缺口，不复活旧 API。若用户明确要求仅原生，则采用准确命名的替代或说明无法满足 |
 | 腾讯上显示传感器温度，有负值和小数 | 不截负、不取整、不把温度写进仅声明正整数 count 的 Heat；优先 Dot 颜色或预计算平均值区域 |
 | 百度 4.0 + 炫酷飞线，只给起终点 | 定义 OD；核查 MapVGL 与当前 4.0 实例兼容，FlyLineLayer 的额外包；未核实前保留二维方向线备选 |
 | Mapbox + 腾讯，对比六边形销售总额 | 共同生成格网并求和，再用面层；不能 Mapbox 求和、腾讯原生 Hexagon 默认点数 |

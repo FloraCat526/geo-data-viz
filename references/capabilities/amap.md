@@ -29,7 +29,7 @@
 
 - JSAPI 2.0 加载与安全配置完成后创建 `Loca.Container({map})`，数据常用 `Loca.GeoJSONSource({data})`，通过所选层的 `setSource` 与 `setStyle` 绑定。GeoJSON 的位置是经度在前，但叠到高德时需经过明确的目标坐标转换。[Loca API](https://a.amap.com/Loca/static/loca-v2/doc/html/index.html)
 - GeoJSON 是载体，不意味着所有图层接受同种 geometry。点层、线层、面层分别匹配几何；格网输入通常为点，不把已聚合面再次当原始点。
-- ScatterLayer 的动画需要合适的**序列帧纹理**，设置 `animate`/`duration` 并启动 `loca.animate.start()`；仅设颜色和 animate 不会自动生成呼吸效果。使用自有或已获授权的纹理，缺资源时生成自有纹理或采用 Circle/Canvas 组合，不热链无关图片。
+- ScatterLayer 的动画需要合适的**序列帧纹理**，设置 `animate`/`duration` 并启动 `loca.animate.start()`；仅设颜色和 animate 不会自动生成呼吸效果。使用自有或已获授权的纹理，缺资源时生成自有纹理交给 Loca 绘制，或改用 AMap.Circle 原生覆盖物并准确说明效果差异，不热链无关图片。
 - 暂停/停止与图层销毁一起管理。部分 `setStyle` 会把省略字段恢复默认值，不能按增量 patch 心智随意更新，否则固定图例与映射可能改变。
 - `px` 与 `meter`、size 与 radius、altitude 与 height 都要按具体类解释；不要把 Loca 1.x 的配置复制到 2.x。版本已有废弃字段时采用匹配的新参数。
 

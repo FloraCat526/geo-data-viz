@@ -34,6 +34,7 @@ async function listFiles() {
   }
   await walk('agents', '.yaml'); await walk('scripts', '.py');
   await walk('references', '.md'); await walk('assets/adapters', '.mjs');
+  await walk('assets/recipes', '.mjs');
   return files.sort();
 }
 async function main(args) {
