@@ -10,20 +10,43 @@
 
 | | |
 | --- | --- |
-| **意大利城市人口 · 星光气泡**<br>![意大利城市人口 · 星光气泡](assets/screenshots/italy-city-population.png) | **新加坡滨海连道 · 霓虹路线**<br>![新加坡滨海连道 · 霓虹路线](assets/screenshots/singapore-coastal-routes.png) |
-| **加州充电站 · 图标点**<br>![加州充电站 · 图标点](assets/screenshots/california-ev-charging.png) | **新加坡历史航线 · 飞线**<br>![新加坡历史航线 · 飞线](assets/screenshots/singapore-flight-routes.png) |
-| **新加坡停车分布 · 蜂窝图**<br>![新加坡停车分布 · 蜂窝图](assets/screenshots/singapore-parking-hexagons.png) | **意大利地震 · 波纹图**<br>![意大利地震 · 波纹图](assets/screenshots/italy-earthquake-ripples.png) |
-| **新加坡住宅 · 3D 热力图**<br>![新加坡住宅 · 3D 热力图](assets/screenshots/singapore-housing-3d-heatmap.png) | **新加坡商户 · 点聚合**<br>![新加坡商户 · 点聚合](assets/screenshots/singapore-business-clusters.png) |
+| **意大利城市人口 · 星光气泡**<br>![意大利城市人口 · 星光气泡](https://raw.githubusercontent.com/FloraCat526/geo-data-viz/0316650/assets/screenshots/italy-city-population.png) | **新加坡滨海连道 · 霓虹路线**<br>![新加坡滨海连道 · 霓虹路线](https://raw.githubusercontent.com/FloraCat526/geo-data-viz/0316650/assets/screenshots/singapore-coastal-routes.png) |
+| **加州充电站 · 图标点**<br>![加州充电站 · 图标点](https://raw.githubusercontent.com/FloraCat526/geo-data-viz/0316650/assets/screenshots/california-ev-charging.png) | **新加坡历史航线 · 飞线**<br>![新加坡历史航线 · 飞线](https://raw.githubusercontent.com/FloraCat526/geo-data-viz/0316650/assets/screenshots/singapore-flight-routes.png) |
+| **新加坡停车分布 · 蜂窝图**<br>![新加坡停车分布 · 蜂窝图](https://raw.githubusercontent.com/FloraCat526/geo-data-viz/0316650/assets/screenshots/singapore-parking-hexagons.png) | **意大利地震 · 波纹图**<br>![意大利地震 · 波纹图](https://raw.githubusercontent.com/FloraCat526/geo-data-viz/0316650/assets/screenshots/italy-earthquake-ripples.png) |
+| **新加坡住宅 · 3D 热力图**<br>![新加坡住宅 · 3D 热力图](https://raw.githubusercontent.com/FloraCat526/geo-data-viz/0316650/assets/screenshots/singapore-housing-3d-heatmap.png) | **新加坡商户 · 点聚合**<br>![新加坡商户 · 点聚合](https://raw.githubusercontent.com/FloraCat526/geo-data-viz/0316650/assets/screenshots/singapore-business-clusters.png) |
 
 ## 安装到 Codex
 
-在终端执行（目标目录应不存在）：
+需要 Node.js 20+。在终端运行：
 
 ```bash
-git clone https://github.com/FloraCat526/geo-data-viz.git "${CODEX_HOME:-$HOME/.codex}/skills/geo-data-viz"
+npx @floracat/geo-data-viz install
 ```
 
-也可以下载仓库，将包含 `SKILL.md` 的整个目录命名为 `geo-data-viz`，放入 Agent 的技能目录。此仓库发布独立 Skill，不依赖演示平台或视频工程。
+默认安装到 `~/.agents/skills/geo-data-viz`。也可以安装到当前项目或指定技能目录：
+
+```bash
+npx @floracat/geo-data-viz install --project
+npx @floracat/geo-data-viz install --dir /path/to/skills
+```
+
+`--project` 使用当前目录下的 `.agents/skills/geo-data-viz`；`--dir` 后面是父目录，安装器会自动追加 `geo-data-viz`。默认与项目目录遵循 [Codex 技能目录约定](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills)。
+
+安装器默认保留已有目录并退出。预览安装用 `--dry-run`；更新时用：
+
+```bash
+npx @floracat/geo-data-viz@latest install --force
+```
+
+`--force` 会先把旧目录备份到技能父目录同级的 `.geo-data-viz-backups/`，再安装新版本，并打印备份位置。安装只复制 Skill 文件，不安装 Python 依赖、地图 SDK 或凭证。
+
+也可以直接从 GitHub 安装（目标目录应不存在）：
+
+```bash
+git clone https://github.com/FloraCat526/geo-data-viz.git "$HOME/.agents/skills/geo-data-viz"
+```
+
+或下载仓库，将包含 `SKILL.md` 的整个目录放入技能目录。Skill 不依赖演示平台或视频工程。未显示时重新启动 Agent。
 
 ## 使用
 
@@ -49,6 +72,7 @@ python3 scripts/profile_geo.py /path/to/stores.csv --out-dir work/profile \
 ## 目录
 
 - [SKILL.md](SKILL.md)：工作流入口。
+- `bin/`：npm 安装命令。
 - `scripts/`：本地数据分析与规范化。
 - `assets/adapters/`：地图 SDK 接入辅助模块和近似坐标转换。
 - `assets/screenshots/`：README 效果展示截图。
