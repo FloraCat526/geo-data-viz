@@ -1,6 +1,6 @@
 {
   "name": "@floracat/geo-data-viz",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "An independent AI agent skill for analyzing geographic data and generating interactive maps.",
   "type": "module",
   "bin": { "geo-data-viz": "bin/geo-data-viz.mjs" },
