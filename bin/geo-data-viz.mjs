@@ -33,8 +33,7 @@ async function listFiles() {
     }
   }
   await walk('agents', '.yaml'); await walk('scripts', '.py');
-  await walk('references', '.md'); await walk('assets/adapters', '.mjs');
-  await walk('assets/recipes', '.mjs');
+  await walk('references', '.md'); await walk('assets/adapters', '.mjs'); await walk('assets/recipes', '.mjs');
   return files.sort();
 }
 async function main(args) {
@@ -91,6 +90,6 @@ async function main(args) {
   } finally { await rm(stage,{recursive:true,force:true}); }
   console.log(`Installed ${files.length} skill files.`);
   if (backup) console.log(`Previous version preserved: ${backup}`);
-  console.log('Invoke $geo-data-viz with your data and authorized map key. Restart the agent if the skill is not listed.');
+  console.log('Use the installed skill with your data and authorized map key. Codex: $geo-data-viz; Claude Code: /geo-data-viz (install into its .claude/skills directory).');
 }
 main(process.argv.slice(2)).catch(error=>{console.error(error.message);process.exitCode=1;});

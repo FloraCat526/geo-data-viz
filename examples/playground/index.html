@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Geo Data Viz Skill · Playground</title><link rel="stylesheet" href="./style.css"></head>
+<body>
+<header><div class="brand"><span class="mark">◎</span><div><strong>Geo Data Viz Skill <span class="playground">Playground</span></strong><small>合成数据 · Canvas 演示 · 不含 AI 服务</small></div></div><div class="header-right"><nav><a href="https://github.com/FloraCat526/geo-data-viz">项目说明</a><a href="https://github.com/FloraCat526/geo-data-viz/blob/main/SKILL.md">独立 Skill ↗</a></nav><span id="active-provider">效果预览</span><button id="export">导出数据</button></div></header>
+<main><aside>
+<div class="eyebrow">DATA / 数据</div><h1>让位置讲述故事</h1>
+<label class="upload" for="file">＋ 选择地理数据<input id="file" type="file" accept=".json,.geojson"></label><p class="hint">GeoJSON 在浏览器中读取；CSV / Excel 请先用 Skill 转换。</p><div class="dataset-line"><p id="dataset-name" class="muted"></p><button id="reset-data" type="button">恢复示例</button></div>
+<div class="stats"><div><strong id="feature-count">—</strong><span>有效要素</span></div><div><strong id="invalid-count">—</strong><span>无效记录</span></div><div><strong id="visible-count">—</strong><span>筛选结果</span></div></div><div id="analysis-summary" class="analysis-summary" role="status"></div>
+<label>数据坐标系<select id="crs"><option value="unknown">未知 · 请确认来源</option><option value="wgs84">WGS84</option><option value="gcj02">GCJ02</option><option value="bd09">BD09</option></select></label>
+<details id="mapping-panel" hidden><summary>字段映射与工作表</summary><p class="hint">只自动识别明确的经纬度列；指标请按业务含义选择。修改后点击重新分析，仍使用同一份文件。</p><label id="sheet-label" hidden>Excel 工作表<select id="sheet"></select></label><div class="mapping-grid"><label>经度列<select id="map-lng"></select></label><label>纬度列<select id="map-lat"></select></label></div><label>标签列<select id="map-label"></select></label><label>数值指标<select id="map-value"></select></label><label>分类列<select id="map-category"></select></label><label>时间列<select id="map-time"></select></label><button id="reanalyze" type="button">按当前映射重新分析</button></details><details id="quality-panel" hidden><summary>分析提示与无效记录</summary><ul id="warnings"></ul><pre id="invalid-rows"></pre></details><div class="divider"></div><div class="eyebrow">MAP / 地图</div>
+<label>地图平台<select id="provider"><option value="preview">效果预览（坐标网格，非地图）</option><option value="google">Google Maps</option><option value="mapbox">Mapbox</option><option value="maptec">Maptec</option><option value="baidu">百度地图</option><option value="amap">高德地图</option><option value="tencent">腾讯地图</option></select></label>
+<details id="map-config" hidden><summary>连接地图</summary>
+<form id="config-form" autocomplete="off"><label>浏览器 Key / Token<input id="map-key" type="password" autocomplete="off" spellcheck="false" required></label>
+<div id="amap-fields" hidden><label>安全 JS Code<input id="security-code" type="password" autocomplete="off" spellcheck="false"></label><label>或安全代理地址<input id="security-host" type="url" placeholder="https://your-domain.example/_AMapService"></label><label><input id="overseas" type="checkbox"> 开启海外地图（仍需相应权限）</label></div>
+<div id="maptec-fields" hidden><label>已授权 SDK 地址<input id="sdk-url" type="url"></label><label>CSS 地址<input id="css-url" type="url"></label><label>服务坐标系<select id="maptec-crs"><option value="">请查阅服务文档</option><option value="wgs84">WGS84</option><option value="gcj02">GCJ02</option><option value="bd09">BD09</option></select></label></div>
+<p class="hint">仅填写浏览器凭证；当前页面内存使用，刷新后清除，不进入数据导出。更换已加载 SDK 的 Key 请刷新页面。</p><button type="submit" class="primary">连接所选地图</button></form></details>
+<button id="connect" class="primary" hidden>重新连接</button>
+<div class="divider"></div><div class="eyebrow">VISUAL / 表达</div>
+<label>视觉效果<select id="effect"><option value="bubble">气泡图 · 数量规模</option><option value="pulse">呼吸点 · 动态强调</option><option value="scatter">散点 · 空间分布</option></select></label>
+<label>显示指标<select id="value-field"></select></label><label>分类字段<select id="category-field"></select></label><label>分类筛选<select id="category-filter"><option value="">全部分类</option></select></label><label>时间字段<select id="time-field"></select></label><label>时间筛选<select id="time-filter"><option value="">全部时间</option></select></label>
+<label>大小缩放 <output id="scale-label">1.0×</output><input id="scale" type="range" min="0.4" max="2.5" step="0.1" value="1"></label>
+<div class="actions"><button id="pause">暂停动画</button><button id="fit">适配数据</button></div>
+</aside>
+<section id="stage" aria-label="地理可视化"><div id="maps"></div><canvas id="overlay" aria-label="数据可视化图层"></canvas><div id="status" role="status" aria-live="polite">正在读取数据…</div><div id="legend" class="legend"></div><div id="detail" class="detail" hidden><button id="close-detail" aria-label="关闭详情">×</button><h2 id="detail-title"></h2><pre id="detail-body"></pre></div><div class="footnote" id="footnote"></div><a class="case-back" href="../">← 案例目录</a></section></main>
+<script type="module" src="./app.mjs"></script></body></html>

@@ -15,3 +15,8 @@ uploads/
 config.local.json
 
 *.tgz
+
+.npmrc
+*.pem
+*.p12
+*.pfx

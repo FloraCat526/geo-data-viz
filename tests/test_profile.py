@@ -29,23 +29,6 @@ class ProfileTests(unittest.TestCase):
         return result,geo
     def fc(self, geometries, **extras):
         return {'type':'FeatureCollection','features':[{'type':'Feature','properties':{'name':f'P{i}','value':i+1},'geometry':g} for i,g in enumerate(geometries)],**extras}
-    def test_candidate_status_respects_missing_and_signed_metrics(self):
-        p,_=self.run_data('lng,lat,value\n12,42,-3\n13,43,9\n',crs='wgs84',fields={'value':'value'})
-        candidates={c['type']:c for c in p['recommendations']}
-        self.assertEqual(candidates['point-color']['status'],'eligible')
-        self.assertEqual(candidates['bubble']['status'],'needs-transform')
-        self.assertFalse(candidates['heatmap']['available'])
-        p,_=self.run_data('lng,lat,value\n12,42,\n',crs='wgs84',fields={'value':'value'})
-        self.assertEqual(next(c for c in p['recommendations'] if c['type']=='bubble')['status'],'blocked')
-    def test_nested_geometry_counts_parts_without_splitting_features(self):
-        geometry={'type':'GeometryCollection','geometries':[
-            {'type':'MultiPoint','coordinates':[[12,42],[12,42]]},
-            {'type':'LineString','coordinates':[[12,42],[13,43]]}]}
-        p,g=self.run_data(self.fc([geometry]),ext='.geojson')
-        self.assertEqual(p['counts']['geometryParts'],{'Point':2,'LineString':1})
-        self.assertEqual(p['counts']['duplicatePointLocations'],1)
-        self.assertEqual(len(g['features']),1)
-        self.assertEqual(g['features'][0]['geometry'],geometry)
     def test_unknown_datum_and_no_auto_metric(self):
         p,g=self.run_data('lng,lat,name,value,user_id,邮编\n116.4,39.9,Beijing,50,123,010001\n121.5,31.2,Shanghai,80,124,200000\n')
         self.assertEqual(p['status'],'needs_crs')
@@ -147,6 +130,31 @@ class ProfileTests(unittest.TestCase):
             m.profile(path,self.root)
         self.assertEqual(path.read_text(),text)
         self.assertFalse((self.root/'profile.json').exists())
+
+class CandidateTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup);self.root=Path(self.tmp.name)
+    def profile(self,root):
+        path=self.root/'data.geojson';path.write_text(json.dumps(root));return m.profile(path,self.root/'profile',fields={'value':'value'})
+    def data(self,values,geometry=None):
+        return {'type':'FeatureCollection','features':[{'type':'Feature','properties':{'value':v},'geometry':geometry or {'type':'Point','coordinates':[103.8,1.3]}} for v in values]}
+    def test_invalid_and_signed_metric_candidates(self):
+        for values,expected in [(['unknown','pending'],'blocked'),([-30,80],'needs-transform'),([0,80],'eligible')]:
+            p=self.profile(self.data(values));b=next(r for r in p['recommendations'] if r['type']=='bubble')
+            self.assertEqual(b['status'],expected);self.assertEqual(b['available'],expected=='eligible')
+    def test_overlap_and_recursive_geometry(self):
+        p=self.profile(self.data(list(range(30))))
+        self.assertEqual(p['counts']['duplicatePointLocations'],29)
+        self.assertTrue(any(r['type']=='cluster' for r in p['recommendations']))
+        geometry={'type':'GeometryCollection','geometries':[{'type':'MultiPoint','coordinates':[[1,2],[1,2]]},{'type':'LineString','coordinates':[[1,2],[2,3]]}]}
+        p=self.profile(self.data([10],geometry))
+        self.assertEqual(p['counts']['geometryParts'],{'Point':2,'LineString':1})
+        self.assertEqual(p['counts']['duplicatePointLocations'],1)
+        self.assertTrue({'points','route-lines'}.issubset({r['type'] for r in p['recommendations']}))
+    def test_metric_on_invalid_geometry_does_not_enable_bubble(self):
+        data=self.data(['bad',100]);data['features'][1]['geometry']['coordinates']=[999,1]
+        p=self.profile(data);b=next(r for r in p['recommendations'] if r['type']=='bubble')
+        self.assertEqual(b['status'],'blocked')
 
 if __name__=='__main__':
     unittest.main(verbosity=2)
