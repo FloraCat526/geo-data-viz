@@ -4,7 +4,7 @@
 
 ## 如何判断需要补充
 
-1. 先核对当前图商与目标 SDK/扩展版本是否支持所需数据和效果。Mapbox 已有 circle/cluster/heatmap/line/fill/fill-extrusion 等时使用对应原生能力；不能因为熟悉某库或想共用代码就全部外置渲染。
+1. 先核对当前图商/地图引擎与目标 SDK/扩展版本是否支持所需数据和效果。MapLibre、Mapbox 已有 circle/cluster/heatmap/line/fill/fill-extrusion 等时使用对应原生能力；不能因为熟悉某库或想共用代码就全部外置渲染。MapLibre + OpenFreeMap 路线中，provider 为 maplibre，底图来源另记 OpenFreeMap。
 2. 缺口可以是该效果不存在、已退出，或已核实的接口/版本限制无法满足必要表现。资料尚未查清不等于不支持；继续核实。缺 Key、底图加载失败、网络错误不能靠第三方渲染解决。
 3. 原生图层样式/数据更新可以组成动画；如仍不能满足目标，再选择适合的补充。优先保留用户选择的底图服务及数据语义，不静默换图商。
 4. 若用户对某次任务额外要求“只能原生/禁止第三方”，遵守该任务限制；否则本 Skill 已允许能力不足时补充。全部路线不可行、或还缺影响结果的必要输入时，再明确说明缺项。
@@ -15,6 +15,8 @@
 - provider-official-extension：厂商发布/维护的可视化扩展，例如 Loca、MapVGL、腾讯 visualization。按本次版本与维护主体核实。
 - third-party：deck.gl、ECharts 等外部库，即使被图商官方文档推荐也不会变成图商原生能力。
 - custom：独立 Canvas/SVG/WebGL，或通过 CustomLayerInterface / WebGLOverlayView 等接口接入自定义渲染。SDK 接入接口不等于 SDK 实现了效果。
+
+同一组件可以组合多种归属：例如加法散点以 deck.gl 绘制、原生 GeoJSON 圆层处理拾取与选中，`inspect()` 返回 `rendererOwner: hybrid` 并列出实际图层及补充原因；不能把整个组合称为图商原生效果。
 
 SDK 内部使用 Canvas/WebGL、图标/纹理作为图层资源均是正常实现；HTML/CSS 面板、图例和详情也无需标成自定义地图数据层。归属应追踪真正绘制业务数据的库与 API，不能只看 DOM 标签。
 

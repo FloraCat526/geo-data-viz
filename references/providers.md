@@ -1,6 +1,6 @@
 # 跨地图接入与兼容性
 
-文档核查日期：2026-09-13。依据供应商官方文档；适配代码尚未使用真实 Key 对全部底图逐家验收。以下共同方案属于基于文档的工程设计，不能据此标记六家已实测通过。
+文档核查日期：2026-09-13。依据供应商官方文档；适配代码尚未使用真实 Key 对全部底图逐家验收。以下共同方案属于基于文档的工程设计，不能据此标记各家已实测通过。
 
 ## 共用实现与切换约定
 
@@ -10,20 +10,24 @@
 - 按地理 bounds 恢复范围，各家 zoom 不直接等价。样式及俯仰按所选原生层支持情况配置，不能为了共用屏幕层一律锁死为零俯仰。
 - 新 SDK 和对应数据层就绪后替换旧实例；先清理旧图层、事件与动画，再销毁地图。迟到 loader 或数据请求不得重新挂载旧图层。
 - 单页 SDK 全局配置可能不能重绑定 Key；同厂商切配置按契约用重载/隔离 iframe。不能靠删除 script 假装 SDK 已卸载。
-- 保留厂商版权、logo 与审图号；3D、地形、遮挡按实际图层能力验收，不声称六家相同。
+- 保留厂商版权、logo 与审图号；3D、地形、遮挡按实际图层能力验收，不声称各家相同。
 
 ## 浏览器 SDK 与原生接入
 
+未指定图商且没有本任务已授权配置时默认 MapLibre + OpenFreeMap；已有唯一适用配置时沿用。明确选定商业图商时保留对应服务和已授权 Key；缺 Key 不自动更换图商。
+
 | 提供商 | 加载与数据层入口 | 坐标与清理 |
 | --- | --- | --- |
+| MapLibre + OpenFreeMap | 固定 MapLibre JS/CSS；OpenFreeMap dark 样式，无 accessToken；GeoJSON addSource → 原生 addLayer | WGS84；聚合查询是 Promise；移除层、源、事件后 map.remove，详见 [免 Key 能力](capabilities/maplibre.md) |
 | Google | Maps JS API / importLibrary；按需创建 Data、Polyline、AdvancedMarker；聚合加载官方维护的 markerclusterer | WGS84；按各类 setMap(null)、移除实例或事件句柄清理；无通用 Map.destroy |
 | Mapbox | 固定版本且匹配的 JS/CSS，public accessToken、style；GeoJSON addSource → 原生 addLayer | WGS84；removeLayer → removeSource，解绑事件后 map.remove；Mapbox 配方直接使用这一流程 |
 | 百度 | 按当前 JSAPI 4.0/兼容版本创建原生覆盖物，或加载与其兼容的 MapVGL | 国内与境外 datum 按官方契约；先清理 overlay/MapVGL，再销毁地图，不能混用两类接口 |
 | 高德 | AMap JSAPI 2.0；按需加载 Loca 2.x，生成原生覆盖物或 Loca 图层；安全配置必须匹配 Key | GCJ02；先清理 Loca 和覆盖物再 map.destroy；海外 showOversea 与权限分别核验 |
 | 腾讯 | TMap GL，使用 visualization 时按官方加载方式启用该扩展；创建 Dot/Heat/Arc 等具体图层 | GCJ02；数据层先清理，再解绑事件并 map.destroy |
-| Maptec | 获准 SDK/CSS 和明确 dataCrs；创建公开 GeoJSONOverlay、HeatmapOverlay 等对应覆盖物 | 按部署契约传坐标；版本核实后用原生挂载/更新/清理 API，不依赖私有 project 自绘 |
 
-各类参数和能力边界以对应能力文档及本次 SDK 为准。这是接入约定，不是六家全部效果的现成渲染器。
+地图底图可按[影像/地形配置](basemaps.md)为 MapLibre/Mapbox 加载 raster 与 DEM；默认 OpenFreeMap 是矢量背景。场景叙事另提供[MapTiler SDK](capabilities/maptiler.md)、[CesiumJS](capabilities/cesium.md)和具有地理范围的静态地图目标。它们由 `build_scene_html.py` 与 `SceneNarrativeViz` 接入，不代表 `build_visual_html.py` 已支持所有 SDK 的统一数据图层。
+
+各类参数和能力边界以对应能力文档及本次 SDK 为准。这是接入约定，不是各家全部效果的现成渲染器。
 
 ## 近期变更与坐标限制
 
@@ -37,7 +41,8 @@
 具体效果、类/图层、输入要求、依赖与限制已独立维护，避免在本文件重复一份会漂移的简表：
 
 - [能力总表](capabilities/index.md) 与 [数据匹配规则](selection.md)。
-- [Google](capabilities/google.md)、[Mapbox](capabilities/mapbox.md)、[Maptec](capabilities/maptec.md)。
+- [Google](capabilities/google.md)、[Mapbox](capabilities/mapbox.md)。
+- [MapTiler 场景](capabilities/maptiler.md)、[Cesium 三维场景](capabilities/cesium.md)。
 - [百度](capabilities/baidu.md)、[高德](capabilities/amap.md)、[腾讯](capabilities/tencent.md)。
 
 本文件只负责共同坐标、加载和生命周期。历史 assets/adapters/providers.mjs 为旧二维投影接口保留，不是新作品的可视化入口；优先使用各家公开数据图层或官方扩展，能力不足时按渲染归属要求接入补充层。
@@ -51,9 +56,3 @@
 - 腾讯：[Map 正确路径](https://lbs.qq.com/webApi/javascriptGL/glDoc/docIndexMap)、[基础入门](https://lbs.qq.com/webApi/javascriptGL/glGuide/glBasic)、[基础类](https://lbs.qq.com/webApi/javascriptGL/glDoc/glDocClass)。因网页正文动态加载，本次通过其官方公开 `api/site/category/infoByMap` → `api/site/article/list` → `api/site/article/content` 读取上述页面正文，仅提取需要的 API 说明。
 
 所有厂商默认保留 SDK 生成的 logo、版权/审图信息；共用面板应给这些元素留空间。浏览器 key 不是服务端 secret；配置需要对应浏览器平台、域名限制、开通状态和用户可用额度。不要从仓库、历史记录或其他项目搜 key；不要把用户 key 写进技能包、提交、日志或演示数据。实际验收应逐家记录“未配置 / 加载失败 / SDK 已加载 / 底图可见 / 交互已验证”，不能仅靠构造器成功标记通过。
-
-## Maptec 版本核查笔记
-
-参考的 BubbleChart 使用 GeoJSONOverlay 圆样式；BreathingPoints 使用 CircleOverlay 的稳定核心和动态外圈，样式字段为 strokeWidth。可选适配模块兼容 center/zoom 属性与 getCenter/getZoom 方法。map.project 在参考版本中源码标为私有，新作品优先采用公开原生覆盖物；补充渲染也应使用有文档依据的公开投影接口，不依赖该私有方法。接口存在性检测不能替代稳定公共 API 保证。
-
-SDK/CSS 地址、style 与 dataCrs 由部署环境决定，项目不内置私有环境地址、浏览器 Key 或供应商 SDK 源文件。

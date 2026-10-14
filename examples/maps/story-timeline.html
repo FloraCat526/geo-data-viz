@@ -1,0 +1,343 @@
+<!doctype html><!-- MIT License
+
+Copyright (c) 2026 FloraCat526
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ -->
+<html data-demo-kind="story" lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>沿着海峡，写下六个章节</title><link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;color:#1e2933}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}button,input{font:inherit}button{cursor:pointer}
+#map{position:fixed;inset:0}.story{position:absolute;top:24px;left:24px;z-index:3;width:343px;max-width:calc(100vw - 48px);padding:25px 26px 24px;border:1px solid #e8ecef;border-radius:24px;background:#ffffffed;box-shadow:0 18px 55px #193e5a22;backdrop-filter:blur(22px)}
+.eyebrow{margin:0 0 12px;color:#1978ab;font-size:11px;font-weight:750;letter-spacing:.13em}.story h1{margin:0;font-size:26px;line-height:1.18;letter-spacing:-.045em}.subtitle{margin:7px 0 21px;color:#82909b;font-size:12px;line-height:1.5}.divider{height:1px;background:#e8edf0;margin-bottom:19px}.chapter{display:flex;align-items:center;gap:8px;color:#1480b3;font-size:11px;font-weight:750}.chapter i{width:7px;height:7px;border-radius:50%;background:#2ea9cc;box-shadow:0 0 0 4px #2ea9cc23}.story h2{font-size:21px;line-height:1.3;letter-spacing:-.025em;margin:12px 0 8px}.date{color:#85949e;font-size:11px;font-weight:600}.summary{margin:15px 0 0;color:#526676;font-size:13px;line-height:1.72;max-height:22vh;overflow:auto}.details{display:grid;gap:10px;margin:17px 0 0;padding-top:14px;border-top:1px solid #edf0f2;max-height:19vh;overflow:auto}.details:empty{display:none}.details div{display:grid;gap:3px}.details dt{font-size:10px;color:#8c9aa4}.details dd{margin:0;color:#3f5565;font-size:12px;line-height:1.5}
+.timeline{position:absolute;z-index:3;left:50%;bottom:24px;transform:translateX(-50%);width:min(860px,calc(100vw - 48px));padding:15px 20px 17px;border:1px solid #e6ebef;border-radius:21px;background:#fffffff0;box-shadow:0 15px 44px #17415c23;backdrop-filter:blur(22px)}.controls{display:flex;align-items:center;gap:15px}.icon{display:grid;place-items:center;width:40px;height:40px;flex:0 0 40px;border:0;border-radius:50%;background:#1378aa;color:#fff;font-size:14px}.icon:hover{background:#095e8a}.step{width:26px;height:30px;border:0;background:transparent;color:#667d8c;font-size:25px;line-height:1}.step:hover{color:#116f9c}.track{min-width:0;flex:1}.rail{width:100%;height:5px;margin:0;accent-color:#1676a8;cursor:pointer}.marks{display:flex;justify-content:space-between;gap:3px;margin-top:7px}.mark{max-width:22%;border:0;background:transparent;color:#93a1aa;text-align:center;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mark.active{color:#176d99;font-weight:750}.counter{min-width:45px;color:#748893;font-size:11px;text-align:right;font-variant-numeric:tabular-nums}.note{margin:10px 0 0;color:#8797a2;font-size:10px}.status{position:absolute;z-index:5;left:24px;bottom:150px;max-width:320px;padding:10px 14px;border-radius:10px;background:#fff;color:#5b6973;font-size:12px;box-shadow:0 8px 22px #123c5520}.status:empty{display:none}
+.maplibregl-ctrl-top-right{top:24px;right:24px}.maplibregl-ctrl-bottom-right{right:8px;bottom:8px;z-index:5}.map-loading .maplibregl-ctrl-attrib{visibility:hidden}
+button:focus-visible,input:focus-visible{outline:2px solid #0d83b8;outline-offset:3px}
+@media(max-width:700px){.story{top:12px;left:12px;max-width:calc(100vw - 24px);width:min(330px,calc(100vw - 24px));max-height:min(32vh,275px);overflow:auto;padding:17px 19px}.story h1{font-size:21px}.subtitle{margin-bottom:12px}.divider{margin-bottom:11px}.story h2{font-size:18px;margin:8px 0 4px}.summary{margin-top:8px;max-height:none;font-size:12px}.details{max-height:none;margin-top:10px;padding-top:8px}.timeline{bottom:42px;width:calc(100vw - 24px);padding:11px 12px}.controls{gap:6px}.marks{display:none}.note{display:none}.status{left:12px;bottom:145px}.maplibregl-ctrl-top-right{top:12px;right:12px}}
+</style><link rel="stylesheet" href="../assets/demo-panels.css"></head><body class="map-loading"><div id="map"></div><section class="story" aria-label="故事章节"><p class="eyebrow">STORY MAP</p><h1 id="title"></h1><p id="subtitle" class="subtitle"></p><div class="divider"></div><span id="chapter" class="chapter"></span><h2 id="event-title"></h2><span id="date" class="date"></span><p id="summary" class="summary"></p><dl id="details" class="details"></dl></section>
+<section class="timeline" aria-label="故事时间轴"><div class="controls"><button id="prev" class="step" type="button" aria-label="上一章">‹</button><button id="play" class="icon" type="button" aria-label="播放">▶</button><button id="next" class="step" type="button" aria-label="下一章">›</button><div class="track"><input id="range" class="rail" type="range" min="0" max="1000" value="0" aria-label="故事进度"><div id="marks" class="marks"></div></div><span id="counter" class="counter"></span></div><p id="note" class="note"></p></section>
+<p id="status" class="status" role="status">地图加载中…</p><script id="story-data" type="application/json">{"title": "沿着海峡，写下六个章节", "subtitle": "一段虚构的东南亚城市故事", "metadata": {"dataCrs": "wgs84", "source": "点位取自仓库内 OpenFlights 历史机场数据；章节、日期与叙述为虚构示例", "routeSemantics": "schematic"}, "events": [{"id": "singapore", "title": "新加坡 · 出发", "chapter": "启程", "date": "2026-03-01", "coordinates": [103.994003, 1.35019], "summary": "故事从赤道附近开始。地图上的位置是机场数据点，叙述仅用于展示故事地图的章节结构。", "details": [{"label": "故事线索", "text": "一封未寄出的信，成为下一站的理由。"}]}, {"id": "kuala-lumpur", "title": "吉隆坡 · 重逢", "chapter": "第二章", "date": "2026-03-03", "coordinates": [101.70999908447, 2.745579957962], "summary": "在第二个城市，故事的线索开始汇合。连接两座城市的虚线只是章节顺序，不是飞行或地面路线。"}, {"id": "penang", "title": "槟城 · 转折", "chapter": "第三章", "date": "2026-03-05", "coordinates": [100.2770004272461, 5.297140121459961], "summary": "新的信息改变了原定计划。时间轴按章节展开，不推算两地之间的实际移动速度。"}, {"id": "phuket", "title": "普吉 · 发现", "chapter": "第四章", "date": "2026-03-07", "coordinates": [98.316902, 8.1132], "summary": "线索在这里变得清晰。地图把地点、顺序和叙事合在同一个视野中。"}, {"id": "bangkok", "title": "曼谷 · 抉择", "chapter": "第五章", "date": "2026-03-10", "coordinates": [100.74700164794922, 13.681099891662598], "summary": "最后一段之前，主角需要作出选择。点击地图上的地点名称可直接跳至该章。"}, {"id": "yangon", "title": "仰光 · 尾声", "chapter": "终章", "date": "2026-03-13", "coordinates": [96.1332015991, 16.907300949099998], "summary": "六个地点组成一条清晰的叙事线。示例日期与情节均为虚构，地图位置来自已收录的机场坐标。"}]}</script><script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script><script type="module">
+/** Geo Data Viz — MIT. Narrative timeline rendered with MapLibre native layers. */
+const fc = features => ({type: 'FeatureCollection', features});
+const idPattern = /^[A-Za-z][\w-]*$/;
+const clamp = value => Math.max(0, Math.min(1, value));
+const point = value => {
+  if (!Array.isArray(value) || value.length !== 2 || !value.every(Number.isFinite) || Math.abs(value[0]) > 180 || Math.abs(value[1]) > 85) {
+    throw new Error('Coordinates must be WGS84 [longitude, latitude] within Mercator bounds');
+  }
+  return [...value];
+};
+const label = (value, field, max = 500, required = false) => {
+  if (value == null && !required) return '';
+  if (typeof value !== 'string' || value.length > max || (required && !value.trim())) throw new Error(`${field} must be text of at most ${max} characters`);
+  return value.trim();
+};
+const line = coordinates => ({type: 'Feature', properties: {}, geometry: {type: 'LineString', coordinates}});
+
+/** Event order is narrative order. Dates are labels, never used to infer location or speed. */
+export function normalizeStory(input) {
+  if (!input || !Array.isArray(input.events) || !input.events.length) throw new Error('Story requires at least one event');
+  if (input.metadata?.dataCrs !== 'wgs84') throw new Error('Story requires verified WGS84 coordinates');
+  const seen = new Set();
+  const events = input.events.map((event, index) => {
+    if (!event || typeof event !== 'object') throw new Error('Each event must be an object');
+    const id = label(event.id, 'event.id', 80, true);
+    if (!idPattern.test(id) || seen.has(id)) throw new Error('Event IDs must be unique and URL-safe');
+    seen.add(id);
+    const coordinates = point(event.coordinates);
+    const title = label(event.title, 'event.title', 120, true);
+    const date = label(event.date, 'event.date', 32);
+    if (date && (!/^\d{4}-\d{2}-\d{2}$/.test(date) || Number.isNaN(Date.parse(`${date}T00:00:00Z`)) || new Date(`${date}T00:00:00Z`).toISOString().slice(0,10) !== date)) throw new Error('event.date must be a real YYYY-MM-DD date');
+    const route = event.routeFromPrevious;
+    if (index === 0 && route != null) throw new Error('First event cannot have routeFromPrevious');
+    let routeCoordinates = null;
+    if (route != null) {
+      if (route.type !== 'LineString' || !Array.isArray(route.coordinates) || route.coordinates.length < 2) throw new Error('routeFromPrevious must be a LineString');
+      routeCoordinates = route.coordinates.map(point);
+      const previous = input.events[index - 1].coordinates;
+      const close = (a, b) => Math.abs(a[0] - b[0]) < 0.000001 && Math.abs(a[1] - b[1]) < 0.000001;
+      if (!close(routeCoordinates[0], previous) || !close(routeCoordinates.at(-1), coordinates)) throw new Error('Provided route endpoints must match adjacent event coordinates');
+    }
+    const details = event.details ?? [];
+    if (!Array.isArray(details)) throw new Error('event.details must be an array');
+    return {id, index, title, coordinates, date, chapter: label(event.chapter, 'event.chapter', 80),
+      summary: label(event.summary, 'event.summary', 1000),
+      details: details.map(item => ({label: label(item?.label, 'detail.label', 80, true), text: label(item?.text, 'detail.text', 500, true)})),
+      route: routeCoordinates, routeKind: index === 0 ? null : routeCoordinates ? 'provided' : 'schematic'};
+  });
+  let lastDate = '';
+  for (const event of events) {
+    if (event.date && lastDate && event.date < lastDate) throw new Error('Event dates must follow narrative order');
+    if (event.date) lastDate = event.date;
+  }
+  for (let i = 1; i < events.length; i++) {
+    const a = events[i-1], b = events[i];
+    const route = b.route ?? [a.coordinates, b.coordinates];
+    if (route.some((p,j) => j && Math.abs(p[0] - route[j-1][0]) > 180)) throw new Error('Split routes at the antimeridian before displaying');
+  }
+  return {title: label(input.title ?? '故事地图', 'title', 150, true), subtitle: label(input.subtitle, 'subtitle', 180), events};
+}
+
+function partialRoute(coordinates, fraction) {
+  if (fraction <= 0) return [coordinates[0], coordinates[0]];
+  if (fraction >= 1) return coordinates;
+  const lengths = coordinates.slice(1).map((point, i) => {
+    const a = coordinates[i];
+    const meanLatitude = (a[1] + point[1]) * Math.PI / 360;
+    return Math.hypot((point[0] - a[0]) * Math.cos(meanLatitude), point[1] - a[1]);
+  });
+  const total = lengths.reduce((sum, n) => sum + n, 0);
+  if (!total) return [coordinates[0], coordinates[0]];
+  let remaining = total * fraction;
+  const result = [coordinates[0]];
+  for (let i=0; i<lengths.length; i++) {
+    if (remaining >= lengths[i]) {result.push(coordinates[i+1]); remaining -= lengths[i]; continue;}
+    const t = lengths[i] ? remaining / lengths[i] : 0;
+    result.push([coordinates[i][0] + (coordinates[i+1][0] - coordinates[i][0])*t, coordinates[i][1] + (coordinates[i+1][1] - coordinates[i][1])*t]);
+    return result;
+  }
+  return coordinates;
+}
+
+export class StoryTimelineLayer {
+  constructor(map, {provider = 'maplibre', id = 'geo-story', data, padding = {top: 95,right: 390,bottom: 145,left: 70}, onChange = () => {}, onSelect = () => {}} = {}) {
+    if (provider !== 'maplibre') throw new Error('Use the selected map provider’s native layers');
+    if (!map?.isStyleLoaded()) throw new Error('Create StoryTimelineLayer after MapLibre style load');
+    if (!idPattern.test(id)) throw new Error('Invalid component ID');
+    this.map = map; this.id = id; this.padding = padding; this.onChange = onChange; this.onSelect = onSelect;
+    this.data = normalizeStory(data); this.progress = 0; this.playing = false; this.destroyed = false; this.frame = null; this.lastFrame = null;
+    this.sources = {future:`${id}-future`, actual:`${id}-actual`, schematic:`${id}-schematic`, events:`${id}-events`, head:`${id}-head`};
+    this.layers = [`${id}-future`,`${id}-actual-case`,`${id}-actual`,`${id}-schematic`,`${id}-halo`,`${id}-nodes`,`${id}-selected`,`${id}-labels`,`${id}-head-halo`,`${id}-head`];
+    if (Object.values(this.sources).some(key=>map.getSource(key)) || this.layers.some(key=>map.getLayer(key))) throw new Error('Component ID already exists');
+    const routes = this.data.events.slice(1).map((event,i) => ({type:'Feature',properties:{kind:event.routeKind,index:i},geometry:{type:'LineString',coordinates:event.route ?? [this.data.events[i].coordinates,event.coordinates]}}));
+    this.routes = routes;
+    const events = this.data.events.map(event => ({type:'Feature',id:event.id,properties:{id:event.id,title:event.title,index:event.index},geometry:{type:'Point',coordinates:event.coordinates}}));
+    map.addSource(this.sources.future,{type:'geojson',data:fc(routes)});
+    map.addSource(this.sources.actual,{type:'geojson',data:fc([])});
+    map.addSource(this.sources.schematic,{type:'geojson',data:fc([])});
+    map.addSource(this.sources.events,{type:'geojson',data:fc(events)});
+    map.addSource(this.sources.head,{type:'geojson',data:fc([])});
+    map.addLayer({id:this.layers[0],type:'line',source:this.sources.future,paint:{'line-color':'#56768d','line-width':2,'line-opacity':.3,'line-dasharray':[1,2]},layout:{'line-cap':'round','line-join':'round'}});
+    map.addLayer({id:this.layers[1],type:'line',source:this.sources.actual,paint:{'line-color':'#fff','line-width':7,'line-opacity':.86},layout:{'line-cap':'round','line-join':'round'}});
+    map.addLayer({id:this.layers[2],type:'line',source:this.sources.actual,paint:{'line-color':'#1676a8','line-width':3.8},layout:{'line-cap':'round','line-join':'round'}});
+    map.addLayer({id:this.layers[3],type:'line',source:this.sources.schematic,paint:{'line-color':'#1676a8','line-width':3,'line-dasharray':[1.4,1.4]},layout:{'line-cap':'round','line-join':'round'}});
+    map.addLayer({id:this.layers[4],type:'circle',source:this.sources.events,paint:{'circle-radius':14,'circle-color':'#fff','circle-opacity':.88}});
+    map.addLayer({id:this.layers[5],type:'circle',source:this.sources.events,paint:{'circle-radius':8,'circle-color':['case',['<=',['get','index'],0],'#1676a8','#9eacb7'],'circle-stroke-width':2,'circle-stroke-color':'#fff'}});
+    map.addLayer({id:this.layers[6],type:'circle',source:this.sources.events,filter:['==',['get','index'],0],paint:{'circle-radius':15,'circle-color':'#1676a8','circle-stroke-color':'#fff','circle-stroke-width':3}});
+    map.addLayer({id:this.layers[7],type:'symbol',source:this.sources.events,layout:{'text-field':['get','title'],'text-font':['Noto Sans Regular'],'text-size':12,'text-offset':[0,2.2],'text-anchor':'top','text-max-width':10},paint:{'text-color':'#193749','text-halo-color':'#fff','text-halo-width':2.4}});
+    map.addLayer({id:this.layers[8],type:'circle',source:this.sources.head,paint:{'circle-radius':17,'circle-color':'#1676a8','circle-opacity':.2}});
+    map.addLayer({id:this.layers[9],type:'circle',source:this.sources.head,paint:{'circle-radius':6,'circle-color':'#fff','circle-stroke-color':'#1676a8','circle-stroke-width':3}});
+    this.click = e => {const feature=e.features?.[0];if(feature)this.seekEvent(Number(feature.properties.index),{select:true});};
+    this.enter = () => {map.getCanvas().style.cursor='pointer';};
+    this.leave = () => {map.getCanvas().style.cursor='';};
+    this.remove = () => this.destroy();
+    for (const layer of [this.layers[5],this.layers[7]]) {map.on('click',layer,this.click);map.on('mouseenter',layer,this.enter);map.on('mouseleave',layer,this.leave);}
+    map.on('remove',this.remove);
+    this.setProgress(0);
+  }
+
+  setProgress(value) {
+    if (this.destroyed) return;
+    if (typeof value !== 'number' || !Number.isFinite(value)) throw new Error('Progress must be finite from 0 to 1');
+    this.progress=clamp(value);
+    const count=this.data.events.length,position=this.progress*Math.max(0,count-1);
+    const selected=Math.min(count-1,Math.floor(position+1e-9));
+    const actual=[],schematic=[];
+    let head=this.data.events[0].coordinates;
+    for(let i=0;i<this.routes.length;i++){
+      const fraction=clamp(position-i);
+      if(fraction<=0)break;
+      const coordinates=partialRoute(this.routes[i].geometry.coordinates,fraction);
+      (this.routes[i].properties.kind==='provided'?actual:schematic).push(line(coordinates));
+      head=coordinates.at(-1);
+    }
+    this.map.getSource(this.sources.actual).setData(fc(actual));
+    this.map.getSource(this.sources.schematic).setData(fc(schematic));
+    this.map.getSource(this.sources.head).setData(fc([{type:'Feature',properties:{},geometry:{type:'Point',coordinates:head}}]));
+    this.map.setFilter(this.layers[6],['==',['get','index'],selected]);
+    this.map.setPaintProperty(this.layers[5],'circle-color',['case',['<=',['get','index'],selected],'#1676a8','#9eacb7']);
+    this.onChange({progress:this.progress,eventIndex:selected,event:this.data.events[selected],position,playing:this.playing});
+  }
+
+  seekEvent(index,{select=false}={}) {
+    if (!Number.isInteger(index)||index<0||index>=this.data.events.length) throw new Error('Unknown story event');
+    this.pause();
+    this.setProgress(this.data.events.length===1?0:index/(this.data.events.length-1));
+    if(select)this.onSelect(this.data.events[index]);
+    return this.data.events[index];
+  }
+
+  play({duration=14000}={}) {
+    if(this.destroyed)return;
+    if(!Number.isFinite(duration)||duration<=0)throw new Error('duration must be positive');
+    if(this.playing)return;
+    if(this.progress>=1)this.setProgress(0);
+    this.playing=true;this.lastFrame=null;
+    const step=timestamp=>{
+      if(!this.playing||this.destroyed)return;
+      if(this.lastFrame!=null)this.setProgress(this.progress+Math.min(100,timestamp-this.lastFrame)/duration);
+      this.lastFrame=timestamp;
+      if(this.progress>=1){this.pause();this.onChange({progress:1,eventIndex:this.data.events.length-1,event:this.data.events.at(-1),playing:false});return;}
+      this.frame=requestAnimationFrame(step);
+    };
+    this.frame=requestAnimationFrame(step);
+    this.onChange({progress:this.progress,eventIndex:Math.floor(this.progress*Math.max(0,this.data.events.length-1)),event:this.data.events[Math.floor(this.progress*Math.max(0,this.data.events.length-1))],playing:true});
+  }
+
+  pause(){if(!this.playing)return;this.playing=false;if(this.frame!=null)cancelAnimationFrame(this.frame);this.frame=null;this.lastFrame=null;this.setProgress(this.progress);}
+
+  fit(){
+    if(this.destroyed)return;
+    const coords=[...this.data.events.map(e=>e.coordinates),...this.routes.flatMap(r=>r.geometry.coordinates)];
+    const lng=coords.map(p=>p[0]),lat=coords.map(p=>p[1]);
+    const west=Math.min(...lng),east=Math.max(...lng),south=Math.min(...lat),north=Math.max(...lat);
+    if(east-west>180)throw new Error('Split story at the antimeridian before fitting');
+    if(west===east&&south===north)this.map.easeTo({center:[west,south],zoom:12,padding:this.padding,duration:0});
+    else this.map.fitBounds([[west,south],[east,north]],{padding:this.padding,maxZoom:12.5,duration:500});
+  }
+
+  inspect(){return {provider:'maplibre',rendererOwner:'provider-native',types:['line','circle','symbol'],events:this.data.events.length,
+    providedRoutes:this.routes.filter(r=>r.properties.kind==='provided').length,schematicRoutes:this.routes.filter(r=>r.properties.kind==='schematic').length,
+    progress:this.progress,playing:this.playing};}
+
+  destroy(){
+    if(this.destroyed)return;this.pause();this.destroyed=true;
+    for(const layer of [this.layers[5],this.layers[7]]){this.map.off('click',layer,this.click);this.map.off('mouseenter',layer,this.enter);this.map.off('mouseleave',layer,this.leave);}
+    this.map.off('remove',this.remove);
+    for(const layer of [...this.layers].reverse())if(this.map.getLayer(layer))this.map.removeLayer(layer);
+    for(const source of Object.values(this.sources))if(this.map.getSource(source))this.map.removeSource(source);
+  }
+}
+
+// Native SDK basemaps. Imagery and elevation resources are explicit and attributed.
+const basemapOwners = new WeakMap();
+function basemapFail(message){throw new TypeError(`Basemap: ${message}`);}
+function basemapUrl(value,{mapbox=false,tiles=false}={}){
+ if(typeof value!=='string'||!value.trim()||/\s/.test(value))basemapFail('resource URL must be HTTPS');
+ if(mapbox&&value.startsWith('mapbox:')){
+  if(!/^mapbox:\/\/(?:styles\/[\w.-]+\/[\w.-]+|mapbox\.[\w.-]+)$/.test(value))basemapFail('invalid Mapbox resource URL');
+ }else{let url;try{url=new URL(value);}catch{basemapFail('resource URL must be HTTPS');}if(url.protocol!=='https:'||!url.hostname||url.username||url.password||url.hash)basemapFail('resource URL must be HTTPS without credentials or fragments');}
+ if(tiles&&!['{z}','{x}','{y}'].every(marker=>value.includes(marker)))basemapFail('tile template needs {z}, {x}, and {y} in Web Mercator XYZ order');
+ return value;
+}
+function basemapAttribution(value){
+ if(typeof value!=='string'||!value.trim()||value.length>2000)basemapFail('source attribution is required');
+ const text=value.replace(/<a href="([^"]+)"(?: target="_blank")?(?: rel="(?:noopener|noreferrer|noopener noreferrer)")?>([^<>]*)<\/a>/g,(_,url,text)=>{basemapUrl(url);return text;});
+ if(/[<>]/.test(text)||/&(?:lt|gt|#0*6[02]|#x0*3[ce]);/i.test(text))basemapFail('attribution supports text and HTTPS links only');
+ return value;
+}
+function basemapNativeImageryStyle(style,provider){
+ if(provider==='mapbox'&&['satellite-v9','satellite-streets-v12'].some(name=>style==='mapbox:'+'//styles/mapbox/'+name))return true;
+ const url=new URL(style);return url.protocol==='https:'&&url.hostname==='api.maptiler.com'&&url.pathname==='/maps/satellite/style.json'&&!!url.searchParams.get('key');
+}
+function basemapSource(raw,{terrain=false,provider}={}){
+ const keys=['url','tiles','tileSize','attribution','minzoom','maxzoom',...(terrain?['encoding','exaggeration']:[])];
+ if(!raw||typeof raw!=='object'||Array.isArray(raw)||Object.keys(raw).some(key=>!keys.includes(key)))basemapFail('source has unknown fields');
+ if(Object.hasOwn(raw,'url')===Object.hasOwn(raw,'tiles'))basemapFail('provide exactly one source URL or tiles array');
+ const result={...raw};
+ if(Object.hasOwn(raw,'url'))basemapUrl(raw.url,{mapbox:provider==='mapbox'});
+ else{if(!Array.isArray(raw.tiles)||raw.tiles.length<1||raw.tiles.length>8)basemapFail('tiles must contain one to eight HTTPS XYZ templates');result.tiles=raw.tiles.map(url=>basemapUrl(url,{tiles:true}));}
+ if(![256,512,514].includes(raw.tileSize??256))basemapFail('tileSize must match the source: 256, 512, or 514');
+ result.tileSize=raw.tileSize??256;result.attribution=basemapAttribution(raw.attribution);
+ for(const key of ['minzoom','maxzoom'])if(Object.hasOwn(raw,key)&&(!Number.isInteger(raw[key])||raw[key]<0||raw[key]>24))basemapFail('source zoom levels must be integers from 0 to 24');
+ if((raw.minzoom??0)>(raw.maxzoom??24))basemapFail('minzoom must not exceed maxzoom');
+ if(terrain){const encoding=raw.encoding??'mapbox',exaggeration=raw.exaggeration??1.5;if(!['mapbox','terrarium'].includes(encoding)||provider==='mapbox'&&encoding!=='mapbox')basemapFail('DEM encoding must be mapbox or terrarium');if(provider==='mapbox'&&raw.url!=='mapbox:'+'//mapbox.mapbox-terrain-dem-v1')basemapFail('Mapbox terrain requires the supported Terrain-DEM tileset');if(typeof exaggeration!=='number'||!Number.isFinite(exaggeration)||exaggeration<=0||exaggeration>10)basemapFail('terrain exaggeration must be greater than 0 and up to 10');Object.assign(result,{encoding,exaggeration});}
+ return result;
+}
+
+export function normalizeBasemap(config,{provider='maplibre',theme='dark'}={}){
+ if(!['maplibre','mapbox','maptiler'].includes(provider)||!['dark','light'].includes(theme))basemapFail('unsupported provider or theme');
+ config=config??{};
+ if(typeof config!=='object'||Array.isArray(config)||Object.keys(config).some(key=>!['type','styleUrl','imagery','terrain','showHillshade'].includes(key)))basemapFail('configuration has unknown fields');
+ const type=config.type??'vector';if(!['vector','imagery','terrain'].includes(type))basemapFail('type must be vector, imagery, or terrain');
+ if(type==='vector'&&['imagery','terrain','showHillshade'].some(key=>Object.hasOwn(config,key)))basemapFail('vector does not accept imagery or terrain options');
+ if(type==='imagery'&&['terrain','showHillshade'].some(key=>Object.hasOwn(config,key)))basemapFail('use type terrain to combine imagery and elevation');
+ if(Object.hasOwn(config,'showHillshade')&&typeof config.showHillshade!=='boolean')basemapFail('showHillshade must be boolean');
+ let styleUrl=config.styleUrl;
+ if(styleUrl===undefined){if(provider==='maptiler')basemapFail('MapTiler requires an explicit authorized styleUrl');styleUrl=provider==='mapbox'?'mapbox:'+'//styles/mapbox/'+(type==='imagery'?'satellite-streets-v12':type==='terrain'?'outdoors-v12':`${theme}-v11`):'https://tiles.openfreemap.org/styles/'+(theme==='light'?'positron':'dark');}
+ basemapUrl(styleUrl,{mapbox:provider==='mapbox'});const result={type,styleUrl};
+ if(Object.hasOwn(config,'imagery'))result.imagery=basemapSource(config.imagery,{provider});
+ else if(type==='imagery'&&!basemapNativeImageryStyle(styleUrl,provider))basemapFail('imagery requires an attributed tile source; vector styles are not satellite imagery');
+ if(type==='terrain'){const source=config.terrain??(provider==='mapbox'?{url:'mapbox:'+'//mapbox.mapbox-terrain-dem-v1',tileSize:512,encoding:'mapbox',attribution:'© Mapbox',exaggeration:1.5}:null);result.terrain=basemapSource(source,{terrain:true,provider});result.showHillshade=config.showHillshade??false;}
+ return result;
+}
+
+/** Register native imagery/DEM layers without replacing the map style or business data.
+ * Initialize new Map({style: normalizeBasemap(...).styleUrl}) before applying.
+ * ready resolves after registration, not tile loading; video capture must await map idle.
+ */
+export function applyBasemap(map,config,{provider='maplibre',theme='dark',id='geo-basemap'}={}){
+ const normalized=normalizeBasemap(config,{provider,theme});
+ if(!map||typeof map.addSource!=='function'||typeof map.addLayer!=='function'||typeof map.on!=='function')basemapFail('a native GL map instance is required');
+ if(typeof id!=='string'||!/^\w[\w-]*$/.test(id))basemapFail('id must contain only letters, digits, underscores, and hyphens');
+ let owners=basemapOwners.get(map);if(!owners){owners=new Map();basemapOwners.set(map,owners);}if(owners.has(id))basemapFail('id already belongs to another basemap controller');
+ const ids={imagery:`${id}-imagery`,raster:`${id}-raster`,dem:`${id}-dem`,hillshadeSource:`${id}-hillshade-dem`,hillshade:`${id}-hillshade`};
+ const sources=new Map(),layers=new Map();let disposed=false,registered=false,installing=false,error=null,timer,settled=false,resolveReady,rejectReady;
+ const ready=new Promise((resolve,reject)=>{resolveReady=resolve;rejectReady=reject;});
+ // Consumers may inspect asynchronous errors instead of awaiting ready; avoid an unhandled rejection.
+ ready.catch(()=>{});
+ const finish=err=>{if(settled)return;settled=true;clearTimeout(timer);err?rejectReady(err):resolveReady(controller);};
+ const source=(key,spec)=>{const current=map.getSource(key);if(current){if(sources.get(key)!==current)basemapFail(`source id collision: ${key}`);return;}map.addSource(key,spec);sources.set(key,map.getSource(key));};
+ const before=()=>{const style=map.getStyle();return style.layers?.find(layer=>layer.type==='symbol'||layer.type==='custom'||['geojson','canvas','video','image'].includes(style.sources?.[layer.source]?.type))?.id;};
+ const ownsLayer=key=>{const current=map.getLayer(key),owned=layers.get(key);return !!current&&!!owned&&current.type===owned.type&&current.source===owned.source&&sources.get(owned.source)===map.getSource(owned.source);};
+ const layer=(key,spec)=>{if(map.getLayer(key)){if(!ownsLayer(key))basemapFail(`layer id collision: ${key}`);return;}map.addLayer({id:key,...spec},before());layers.set(key,{type:spec.type,source:spec.source});};
+ const demSpec=()=>{const {exaggeration,...definition}=normalized.terrain;return {type:'raster-dem',...definition};};
+ const ownsResources=()=>[...sources].every(([key,owned])=>owned===map.getSource(key))&&[...layers.keys()].every(ownsLayer);
+ const terrainReady=()=>!normalized.terrain||(map.getTerrain?.()?.source===ids.dem&&map.getTerrain?.()?.exaggeration===normalized.terrain.exaggeration);
+ const events=['style.load','load','styledata','sourcedata','idle'];
+ function register(){if(disposed||installing||!map.isStyleLoaded())return;if(registered&&ownsResources()&&terrainReady())return;installing=true;try{
+  if(normalized.terrain){const projection=map.getProjection?.()?.type??'mercator';if(provider!=='mapbox'&&projection!=='mercator'||provider==='mapbox'&&!['mercator','globe'].includes(projection))basemapFail('terrain requires a supported geographic projection (MapLibre/MapTiler: mercator; Mapbox: mercator or globe)');}
+  if(normalized.imagery){source(ids.imagery,{type:'raster',...normalized.imagery});layer(ids.raster,{type:'raster',source:ids.imagery,paint:{'raster-opacity':1,'raster-fade-duration':0}});}
+  if(normalized.terrain){source(ids.dem,demSpec());map.setTerrain({source:ids.dem,exaggeration:normalized.terrain.exaggeration});if(normalized.showHillshade){source(ids.hillshadeSource,demSpec());layer(ids.hillshade,{type:'hillshade',source:ids.hillshadeSource,paint:{'hillshade-exaggeration':.4}});}}
+  registered=true;error=null;finish();
+ }catch(err){registered=false;error=err;finish(err);}finally{installing=false;}}
+ const controller={config:normalized,ready,inspect(){return {type:normalized.type,styleUrl:normalized.styleUrl,registered:!disposed&&registered&&ownsResources()&&terrainReady(),imagery:normalized.type==='imagery'||!!normalized.imagery,terrain:!!normalized.terrain,showHillshade:normalized.showHillshade??false,error:error?.message??null};},destroy(){if(disposed)return;disposed=true;clearTimeout(timer);for(const event of events)map.off(event,register);if(!settled)finish(Error('Basemap disposed before its style became ready'));try{if(map.getTerrain?.()?.source===ids.dem&&sources.get(ids.dem)===map.getSource(ids.dem))map.setTerrain(null);for(const key of [...layers.keys()].reverse())if(ownsLayer(key))map.removeLayer(key);for(const [key,owned] of [...sources].reverse())if(map.getSource(key)===owned)map.removeSource(key);}finally{owners.delete(id);registered=false;}}};
+ owners.set(id,controller);for(const event of events)map.on(event,register);timer=setTimeout(()=>{error=Error('Basemap style did not become ready');finish(error);},20000);register();return controller;
+}
+
+// Constructors that require a loaded style can await TileJSON/source initialization.
+// This is not a complete tilesLoaded/idle test for screenshots or video capture.
+export function waitForBasemapStyle(map,{timeoutMs=20000}={}){
+ if(map.isStyleLoaded())return Promise.resolve();
+ return new Promise((resolve,reject)=>{let timer;const events=['idle','sourcedata','styledata'],cleanup=()=>{clearTimeout(timer);for(const event of events)map.off(event,check);},check=()=>{if(map.isStyleLoaded()){cleanup();resolve();}};timer=setTimeout(()=>{cleanup();reject(Error('Basemap resources did not become ready'));},timeoutMs);for(const event of events)map.on(event,check);check();});
+}
+
+const basemapConfig={"type": "vector", "styleUrl": "https://tiles.openfreemap.org/styles/positron"};
+const $=id=>document.getElementById(id),raw=JSON.parse($('story-data').textContent);let map,story,basemapController,current=-1;
+const mk=(tag,value)=>{const el=document.createElement(tag);el.textContent=value;return el;};
+function render(state){if(!story)return;const events=story.data.events,index=state.eventIndex,event=events[index];if(current!==index){current=index;$('event-title').textContent=event.title;$('chapter').replaceChildren(mk('i',''),mk('span',event.chapter||`第 ${index+1} 章`));$('date').textContent=event.date||'';$('summary').textContent=event.summary||'';$('details').replaceChildren();for(const d of event.details){const row=mk('div','');row.append(mk('dt',d.label),mk('dd',d.text));$('details').append(row);}for(const [i,button] of [...$('marks').children].entries())button.classList.toggle('active',i===index);}$('range').value=String(Math.round(state.progress*1000));$('counter').textContent=`${index+1} / ${events.length}`;$('play').textContent=state.playing?'Ⅱ':'▶';$('play').setAttribute('aria-label',state.playing?'暂停':'播放');}
+function padding(){return innerWidth<=700?{top:Math.min(innerHeight*.32,275)+25,right:35,bottom:155,left:35}:{top:70,right:70,bottom:165,left:390};}
+function select(index){story.seekEvent(index,{select:true});}
+function collapseAttribution(){const details=map.getContainer().querySelector('details.maplibregl-ctrl-attrib');if(details){details.open=false;details.classList.remove('maplibregl-compact-show');}document.body.classList.remove('map-loading');}
+try{const data=normalizeStory(raw);$('title').textContent=data.title;$('subtitle').textContent=data.subtitle||'';if(!data.subtitle)$('subtitle').hidden=true;
+  $('note').textContent=data.events.some(e=>e.routeKind==='schematic')?'虚线是章节间示意连接；动画不代表实际行进速度。':'轨迹动画按章节顺序展开，不代表实际行进速度。';
+  map=new maplibregl.Map({container:'map',style:basemapConfig.styleUrl,center:data.events[0].coordinates,zoom:6,attributionControl:{compact:true}});
+  map.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-right');
+  map.on('error',()=>{$('status').textContent='地图资源加载失败，请检查网络。';collapseAttribution();});
+  map.on('load',async()=>{try{basemapController=applyBasemap(map,basemapConfig,{theme:'light'});await basemapController.ready;await waitForBasemapStyle(map);if(basemapConfig.type==='terrain')map.setPitch(50);story=new StoryTimelineLayer(map,{data:raw,padding:padding(),onChange:render});$('marks').replaceChildren();data.events.forEach((event,i)=>{const b=mk('button',event.date||String(i+1));b.type='button';b.className='mark';b.title=event.title;b.setAttribute('aria-label',`第 ${i+1} 章：${event.title}`);b.onclick=()=>select(i);$('marks').append(b);});story.fit();story.setProgress(0);$('status').textContent='';collapseAttribution();}catch(error){$('status').textContent='故事无法显示：'+error.message;}});
+  $('play').onclick=()=>{if(!story)return;if(story.playing){story.pause();return;}if(matchMedia('(prefers-reduced-motion: reduce)').matches){story.seekEvent(story.data.events.length-1);return;}story.play({duration:Math.max(9000,(story.data.events.length-1)*3000)});};
+  $('prev').onclick=()=>{if(story)select(Math.max(0,Math.floor(story.progress*(story.data.events.length-1)+1e-9)-1));};
+  $('next').onclick=()=>{if(story)select(Math.min(story.data.events.length-1,Math.floor(story.progress*(story.data.events.length-1)+1e-9)+1));};
+  $('range').oninput=e=>{if(!story)return;story.pause();story.setProgress(Number(e.target.value)/1000);};
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)story?.pause();});
+  window.addEventListener('resize',()=>{if(story){story.padding=padding();map.resize();story.fit();}});
+  window.addEventListener('pagehide',()=>{story?.destroy();basemapController?.destroy();map?.remove();},{once:true});
+}catch(error){$('status').textContent='故事数据不完整：'+error.message;}
+</script></body></html>

@@ -1,0 +1,13 @@
+:root{color-scheme:dark;font:14px system-ui;color:#e5edf9;background:#09121e}*{box-sizing:border-box}body{margin:0}#map{position:fixed;inset:0}.panel{position:absolute;top:20px;left:20px;width:310px;max-height:85vh;overflow:auto;padding:22px;border:1px solid #334155;border-radius:20px;background:#101c2bea;backdrop-filter:blur(14px)}h1{font-size:23px;margin:0 0 12px}p{font-size:12px;line-height:1.8;color:#afc0d5}#count{font-size:30px;font-weight:650;color:#67e8f9}.controls{display:flex;gap:7px;flex-wrap:wrap;margin:16px 0}button,select{font:inherit;background:#203047;color:#e5edf9;border:1px solid #425671;padding:8px 10px;border-radius:9px;cursor:pointer}button[aria-pressed=true]{background:#0e7490}button:focus-visible,select:focus-visible{outline:2px solid #67e8f9}#detail{white-space:pre-wrap;font-size:12px;line-height:1.8;border-top:1px solid #334155;padding-top:10px}a{color:#8bddf5}#status{color:#fbbf24}#legend{font-size:12px;line-height:1.8;color:#c4d2e3}.foot{margin-top:16px;font-size:11px}#collapse{float:right;font-size:11px}body.collapsed .body{display:none}body.collapsed h1{font-size:17px;margin:0}@media(max-width:700px){.panel{top:auto;bottom:45px;left:10px;width:calc(100% - 20px);max-height:42vh;padding:16px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+
+#detail{max-height:150px;overflow:auto}
+
+.flight-legend{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:14px 0}.flight-legend button{display:flex;align-items:center;gap:7px;font-size:12px;padding:9px 8px;text-align:left}.flight-legend button:first-child{grid-column:1/-1}.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}.flight-legend button[aria-pressed=true]{background:#263f58;border-color:#7aa1c7}.controls:empty{display:none}
+.maplibregl-ctrl-bottom-right{right:8px;bottom:8px;z-index:5}
+.basemap-picker{display:flex;gap:3px;padding:3px;border:1px solid #7388b44d;border-radius:11px;background:#142032e8;box-shadow:0 3px 16px #040b1933;backdrop-filter:blur(12px)}
+.basemap-picker button{display:flex;align-items:center;gap:6px;border:1px solid transparent;border-radius:7px;background:transparent;padding:3px 7px;font:500 11px system-ui;color:#c4d0e5;min-height:30px}
+.basemap-picker button[aria-pressed=true]{background:#38455d;border-color:#8d9bc069;color:#fff}
+.basemap-picker button:hover{background:#34445c}
+.basemap-picker button:disabled{cursor:wait;opacity:.65}
+.basemap-picker img{width:22px;height:22px;object-fit:cover;border-radius:4px;pointer-events:none}
+.maplibregl-ctrl-bottom-left{z-index:5}

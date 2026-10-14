@@ -1,0 +1,125 @@
+{
+  "type": "FeatureCollection",
+  "metadata": {
+    "dataCrs": "wgs84",
+    "retrievedDate": "2026-10-08",
+    "license": "CC0",
+    "source": "Wikidata EntityData P625; known entities, no geocoding"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "id": "grindelwald",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.0333333333333,
+          46.625555555556
+        ]
+      },
+      "properties": {
+        "name": "格林德瓦",
+        "wikidataId": "Q64004",
+        "source": "https://www.wikidata.org/wiki/Special:EntityData/Q64004.json",
+        "entityRevision": 2541445184,
+        "coordinatePrecision": 0.00027777777777778,
+        "license": "CC0"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "kleine-scheidegg",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.9613888888889,
+          46.584722222222
+        ]
+      },
+      "properties": {
+        "name": "小夏戴克",
+        "wikidataId": "Q869540",
+        "source": "https://www.wikidata.org/wiki/Special:EntityData/Q869540.json",
+        "entityRevision": 2527612238,
+        "coordinatePrecision": 0.00027777777777778,
+        "license": "CC0"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "eiger",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          8.005286822,
+          46.577607529
+        ]
+      },
+      "properties": {
+        "name": "艾格峰",
+        "wikidataId": "Q4425",
+        "source": "https://www.wikidata.org/wiki/Special:EntityData/Q4425.json",
+        "entityRevision": 2554958060,
+        "coordinatePrecision": 1e-08,
+        "license": "CC0"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "monch",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.9972222222222,
+          46.558333333333
+        ]
+      },
+      "properties": {
+        "name": "僧侣峰",
+        "wikidataId": "Q16525",
+        "source": "https://www.wikidata.org/wiki/Special:EntityData/Q16525.json",
+        "entityRevision": 2554962569,
+        "coordinatePrecision": 0.00027777777777778,
+        "license": "CC0"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "jungfraujoch",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.9830555555556,
+          46.547777777778
+        ]
+      },
+      "properties": {
+        "name": "少女峰山坳",
+        "wikidataId": "Q665676",
+        "source": "https://www.wikidata.org/wiki/Special:EntityData/Q665676.json",
+        "entityRevision": 2550078436,
+        "coordinatePrecision": 0.00027777777777778,
+        "license": "CC0"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "jungfrau",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          7.9625,
+          46.536944444444
+        ]
+      },
+      "properties": {
+        "name": "少女峰",
+        "wikidataId": "Q15312",
+        "source": "https://www.wikidata.org/wiki/Special:EntityData/Q15312.json",
+        "entityRevision": 2554962458,
+        "coordinatePrecision": 0.00027777777777778,
+        "license": "CC0"
+      }
+    }
+  ]
+}

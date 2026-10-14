@@ -1,0 +1,8 @@
+node_modules/
+out/
+build/
+.env
+.env.*
+runtime-config.json
+scene.json
+*.log

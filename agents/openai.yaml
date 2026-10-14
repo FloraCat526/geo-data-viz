@@ -1,4 +1,4 @@
 interface:
   display_name: "多地图地理数据可视化"
-  short_description: "分析上传的地理数据，选择合适的地图表达并生成可运行的 HTML 文件"
-  default_prompt: "使用 $geo-data-viz 分析我上传的数据，选择最合适的地理可视化形式，使用所选图商和已授权 Key 生成可运行的 HTML。"
+  short_description: "分析地理数据，生成地图、地球或场景叙事 HTML，按需导出视频"
+  default_prompt: "使用 $geo-data-viz 分析我上传的数据，选择合适的地图、地球或场景叙事表达并生成 HTML。普通地图未指定图商时使用 MapLibre + OpenFreeMap；按需求配置已授权影像或地形。指定图商时沿用该服务。叙事可编排章节和镜头，只有我要求视频时才使用可选 Remotion 输出。"

@@ -32,11 +32,23 @@ def missing(value):
     return value is None or (isinstance(value, str) and value.strip().lower() in MISSING)
 
 
-def number(value):
+def number(value, decimal_separator=".", thousands_separator=None):
     if missing(value) or isinstance(value, bool) or isinstance(value, (list, dict)):
         return None
     try:
-        result = float(value.strip() if isinstance(value, str) else value)
+        if isinstance(value, str):
+            value = value.strip()
+            if thousands_separator and thousands_separator in value:
+                group = re.escape(thousands_separator)
+                decimal = re.escape(decimal_separator)
+                if not re.fullmatch(rf"[+-]?\d{{1,3}}(?:{group}\d{{3}})+(?:{decimal}\d+)?", value):
+                    return None
+                value = value.replace(thousands_separator, "")
+            if decimal_separator != ".":
+                if "." in value:
+                    return None
+                value = value.replace(decimal_separator, ".")
+        result = float(value)
         return result if math.isfinite(result) else None
     except (ValueError, TypeError, OverflowError):
         return None
@@ -69,7 +81,13 @@ def quantiles(values):
     return {"min": vals[0], "p25": q(.25), "p50": q(.5), "p75": q(.75), "p95": q(.95), "max": vals[-1]}
 
 
-def parse_time(value):
+def parse_time(value, time_unit=None):
+    if time_unit and number(value) is not None:
+        try:
+            seconds = number(value) / (1000 if time_unit == "milliseconds" else 1)
+            return dt.datetime.fromtimestamp(seconds, dt.timezone.utc).isoformat().replace("+00:00", "Z")
+        except (ValueError, OverflowError, OSError):
+            return None
     if isinstance(value, (dt.datetime, dt.date)):
         value = value.isoformat()
     if not isinstance(value, str) or missing(value):
@@ -86,7 +104,7 @@ def parse_time(value):
     return None
 
 
-def load_input(path, sheet=None):
+def load_input(path, sheet=None, delimiter=None):
     suffix = path.suffix.lower()
     if suffix in {".xlsx", ".xlsm"}:
         try:
@@ -137,12 +155,13 @@ def load_input(path, sheet=None):
         if not isinstance(records, list):
             raise ValueError("JSON records must be an array.")
         return records, None, {"format": "json-records", "encoding": encoding}
-    delimiter = "\t" if suffix == ".tsv" else ","
-    if suffix not in {".csv", ".tsv"}:
+    if delimiter is None:
         try:
-            delimiter = csv.Sniffer().sniff(text[:8192], delimiters=",\t;").delimiter
+            delimiter = csv.Sniffer().sniff(text[:8192], delimiters=",\t;|").delimiter
         except csv.Error:
-            pass
+            delimiter = "\t" if suffix == ".tsv" else ","
+    if not isinstance(delimiter, str) or len(delimiter) != 1:
+        raise ValueError("Delimiter must be one character; use --delimiter tab for TSV.")
     reader = csv.DictReader(io.StringIO(text), delimiter=delimiter)
     if not reader.fieldnames:
         raise ValueError("Input has no header.")
@@ -155,7 +174,7 @@ def load_input(path, sheet=None):
             row["__parse_error"] = "more cells than header fields"
             row.pop(None)
         rows.append(row)
-    return rows, None, {"format": "tsv" if delimiter == "\t" else "csv", "encoding": encoding, "rowNumberMeaning": "data record index starting at 1; header excluded"}
+    return rows, None, {"format": "tsv" if delimiter == "\t" else "csv", "delimiter": delimiter, "encoding": encoding, "rowNumberMeaning": "data record index starting at 1; header excluded"}
 
 
 def check_headers(headers):
@@ -175,12 +194,27 @@ def declared_crs(root):
 def normalize_crs(value):
     if value is None:
         return None
-    compact = re.sub(r"[^a-z0-9]", "", json.dumps(value).lower())
-    if "gcj02" in compact or "gcj2" in compact:
-        return "gcj02"
-    if "bd09" in compact or "bd9" in compact:
-        return "bd09"
-    if "wgs84" in compact or "crs84" in compact or "epsg4326" in compact or "epsg64326" in compact:
+    if isinstance(value, dict):
+        props = value.get("properties")
+        if not isinstance(props, dict):
+            return "unknown"
+        if value.get("type") == "name":
+            return normalize_crs(props.get("name")) or "unknown"
+        if str(value.get("type")).upper() == "EPSG":
+            return "wgs84" if str(props.get("code")) == "4326" else "unknown"
+        return "unknown"
+    if not isinstance(value, str):
+        return "unknown"
+    text = value.strip().lower()
+    aliases = {"wgs84":"wgs84", "wgs-84":"wgs84", "wgs 84":"wgs84",
+               "crs84":"wgs84", "ogc:crs84":"wgs84", "epsg:4326":"wgs84",
+               "epsg4326":"wgs84", "gcj02":"gcj02", "gcj-02":"gcj02",
+               "gcj2":"gcj02", "bd09":"bd09", "bd-09":"bd09", "bd9":"bd09"}
+    if text in aliases:
+        return aliases[text]
+    if re.fullmatch(r"urn:ogc:def:crs:epsg:[^:]*:4326", text) or re.fullmatch(r"urn:ogc:def:crs:ogc:[^:]*:crs84", text):
+        return "wgs84"
+    if re.fullmatch(r"https?://www\.opengis\.net/def/crs/epsg/[^/]+/4326", text) or re.fullmatch(r"https?://www\.opengis\.net/def/crs/ogc/[^/]+/crs84", text):
         return "wgs84"
     return "unknown"
 
@@ -195,14 +229,15 @@ def id_like(field, values):
     return bool(strings) and sum(bool(re.match(r"^0\d+$", v)) for v in strings) / len(strings) > .5
 
 
-def inspect_fields(records):
+def inspect_fields(records, decimal_separator=".", thousands_separator=None, time_unit=None, time_field=None, number_format_fields=None):
     fields = sorted({str(k) for row in records if isinstance(row, dict) for k in row})
     stats = {}
     candidates = {role: [] for role in (*ALIASES, "value")}
     for field in fields:
         values = [row.get(field) for row in records if isinstance(row, dict)]
         present = [v for v in values if not missing(v)]
-        nums = [n for v in values if (n := number(v)) is not None]
+        local_format = number_format_fields is None or field in number_format_fields
+        nums = [n for v in values if (n := number(v, decimal_separator if local_format else ".", thousands_separator if local_format else None)) is not None]
         unique = Counter(json.dumps(v, ensure_ascii=False, sort_keys=True, default=str) for v in present)
         identifier = id_like(field, values)
         stat = {"nonMissing": len(present), "missing": len(values)-len(present), "numeric": len(nums), "numericInvalid": len(present)-len(nums), "unique": len(unique), "idLike": identifier, "quantiles": quantiles(nums)}
@@ -216,7 +251,8 @@ def inspect_fields(records):
                 coordinate = coordinate or role in {"lng", "lat"}
         if present and len(nums)/len(present) >= .8 and not identifier and not coordinate and normalized not in ALIASES["time"]:
             candidates["value"].append(field)
-        times = [t for v in present if (t := parse_time(v)) is not None]
+        unit = time_unit if field == time_field or (time_field is None and normalized in ALIASES["time"]) else None
+        times = [t for v in present if (t := parse_time(v, unit)) is not None]
         if times:
             utc = sorted(t for t in times if t.endswith("Z"))
             local = sorted(t for t in times if not t.endswith("Z"))
@@ -347,6 +383,8 @@ def visualization_candidates(features, roles, part_counts, duplicate_locations):
             return "blocked", ["finite-metric-on-valid-geometry"], nums
         return "eligible", [], nums
     if part_counts["Point"]:
+        if roles["category"]:
+            add("category-points", "eligible", "Use points with colorBy category; colors identify categories, not magnitude.")
         add("points", "eligible", "Equal-size locations; no numeric metric required. This list is not a ranking.")
         status, requires, values = metric_state("Point")
         add("point-color", status, "Map a confirmed intensity, rate or signed change to color; units determine the scale.", requires)
@@ -359,7 +397,7 @@ def visualization_candidates(features, roles, part_counts, duplicate_locations):
     if part_counts["LineString"]:
         add("route-lines", "eligible", "Render existing vertices; distinguish actual paths from OD relations and do not invent direction or timestamps.")
     if part_counts["Polygon"]:
-        add("area-outline", "eligible", "Display known boundaries without inventing a metric.")
+        add("area-fill", "eligible", "Show known areas with constant or category fill; color must not imply a numeric metric.")
         status, requires, _ = metric_state("Polygon")
         add("choropleth", status, "Use a meaningful area measure; rates require denominator-aware aggregation, and null remains missing.", requires)
     for role in ("category", "time"):
@@ -369,13 +407,27 @@ def visualization_candidates(features, roles, part_counts, duplicate_locations):
     return result
 
 
-def profile(path, out_dir, crs=None, fields=None, sheet=None):
-    rows, root, source = load_input(path, sheet)
+def profile(path, out_dir, crs=None, fields=None, sheet=None, *, delimiter=None,
+            decimal_separator=".", thousands_separator=None, time_unit=None, crs_override_reason=None, number_format_fields=None):
+    if decimal_separator not in {".", ","} or (thousands_separator is not None and (len(thousands_separator) != 1 or thousands_separator == decimal_separator or thousands_separator.isalnum())):
+        raise ValueError("Use decimal . or , and a distinct single-character grouping separator.")
+    if time_unit not in {None, "seconds", "milliseconds"}:
+        raise ValueError("Time unit must be seconds or milliseconds.")
+    if crs_override_reason is not None and (not crs or not crs_override_reason.strip()):
+        raise ValueError("A CRS correction requires --crs and a nonempty source-based reason.")
+    rows, root, source = load_input(path, sheet, delimiter)
+    fields = fields or {}
+    source["parsing"] = {"decimalSeparator": decimal_separator, "thousandsSeparator": thousands_separator, "timeUnit": time_unit, "numberFormatFields": number_format_fields}
     source["fileName"] = path.name
     source["sha256"] = hashlib.sha256(path.read_bytes()).hexdigest()
     warnings = []
     props = [r.get("properties") or {} if source["format"] == "geojson" and isinstance(r, dict) else r for r in rows]
-    stats, candidates = inspect_fields(props)
+    stats, candidates = inspect_fields(props, decimal_separator, thousands_separator, time_unit, fields.get("time"), number_format_fields)
+    if number_format_fields is not None and (not isinstance(number_format_fields, (list, tuple)) or any(f not in stats for f in number_format_fields)):
+        raise ValueError("Each --number-format-field must name an existing column.")
+    def field_number(value, field):
+        use_format = number_format_fields is None or field in number_format_fields
+        return number(value, decimal_separator if use_format else ".", thousands_separator if use_format else None)
     roles = {}
     fields = fields or {}
     for role in ("lng", "lat", "value", "label", "category", "time"):
@@ -395,7 +447,13 @@ def profile(path, out_dir, crs=None, fields=None, sheet=None):
         if normalize_crs(declared) != "wgs84":
             warnings.append("non_rfc7946_crs: source declares a non-WGS84 or unrecognized CRS; source coordinates retained")
         if crs and normalize_crs(declared) != crs:
-            warnings.append("crs_override: --crs overrides the source declaration; no coordinates were converted")
+            if crs_override_reason:
+                source["crsResolution"] = {"action": "correct-declaration", "reason": crs_override_reason.strip(), "target": crs, "coordinatesConverted": False}
+                warnings.append("crs_declaration_corrected: source-based correction recorded; no coordinates converted")
+            else:
+                data_crs = "unknown"
+                source["crsResolution"] = {"action": "unresolved", "requested": crs}
+                warnings.append("crs_conflict: source and --crs disagree; transform coordinates or supply --crs-override-reason for a verified metadata correction")
     if data_crs == "unknown":
         warnings.append("unknown_crs: numeric coordinate ranges cannot identify WGS84, GCJ-02 or BD-09; establish source provenance")
     invalid, features, all_points = [], [], []
@@ -431,7 +489,7 @@ def profile(path, out_dir, crs=None, fields=None, sheet=None):
             if coordinate_missing:
                 reasons.append("longitude/latitude fields unavailable or ambiguous")
             else:
-                lng, lat = number(row.get(roles["lng"])), number(row.get(roles["lat"]))
+                lng, lat = field_number(row.get(roles["lng"]), roles["lng"]), field_number(row.get(roles["lat"]), roles["lat"])
                 for role, value in (("lng", lng), ("lat", lat)):
                     if value is None:
                         raw = row.get(roles[role])
@@ -461,7 +519,7 @@ def profile(path, out_dir, crs=None, fields=None, sheet=None):
             while backup in properties:
                 backup = "_" + backup
             properties[backup] = safe_json(row["id"], [])
-        properties["__viz"] = {"value": number(properties.get(roles["value"])) if roles["value"] else None, "label": str(label) if not missing(label) else f"Record {index}", "category": str(category) if not missing(category) else None, "time": parse_time(time_value)}
+        properties["__viz"] = {"value": field_number(properties.get(roles["value"]), roles["value"]) if roles["value"] else None, "label": str(label) if not missing(label) else f"Record {index}", "category": str(category) if not missing(category) else None, "time": parse_time(time_value, time_unit)}
         fid = f"f_{row_hash}"
         seen_ids[fid] += 1
         if seen_ids[fid] > 1:
@@ -512,7 +570,11 @@ def profile(path, out_dir, crs=None, fields=None, sheet=None):
     warnings = list(dict.fromkeys(warnings))
     counts = {"inputRecords": len(rows), "validFeatures": len(features), "invalidRecords": len(invalid), "geometryTypes": dict(geom_counts), "geometryParts": dict(part_counts), "vertices": len(all_points), "duplicateRecords": sum(n-1 for n in seen_records.values()), "duplicatePointLocations": duplicate_locations, "uniquePointLocations": len(seen_points)}
     metadata = {"schemaVersion": 1, "status": status, "dataCrs": data_crs, "roles": roles, "warnings": warnings, "source": source}
-    result = {**metadata, "roleCandidates": candidates, "counts": counts, "invalidRows": invalid, "fields": stats, "spatial": spatial, "recommendations": recommendations}
+    metric_values = [abs(f["properties"]["__viz"]["value"]) for f in features if f["geometry"]["type"] == "Point" and f["properties"]["__viz"]["value"] is not None]
+    max_abs = max(metric_values, default=0)
+    tiny_count = sum(0 < v < max_abs * (2 / 28) ** 2 for v in metric_values)
+    visual_hints = {"bubble": {"referenceMaxRadiusPx": 28, "belowTwoPixels": tiny_count, "positionMarkersRecommended": tiny_count > 0}}
+    result = {"visualHints": visual_hints, **metadata, "roleCandidates": candidates, "counts": counts, "invalidRows": invalid, "fields": stats, "spatial": spatial, "recommendations": recommendations}
     collection = {"type": "FeatureCollection", "metadata": metadata, "features": features}
     out_dir.mkdir(parents=True, exist_ok=True)
     for name in ("profile.json", "normalized.geojson"):
@@ -529,12 +591,18 @@ def main():
     parser.add_argument("input", type=Path)
     parser.add_argument("--out-dir", required=True, type=Path)
     parser.add_argument("--crs", choices=("wgs84", "gcj02", "bd09", "unknown"), default=None, help="Source CRS; never performs coordinate conversion. Unspecified tables remain unknown.")
+    parser.add_argument("--delimiter", help="Explicit delimiter: comma, semicolon, tab, pipe or one character; otherwise detect")
+    parser.add_argument("--decimal-separator", choices=(".", ","), default=".")
+    parser.add_argument("--thousands-separator", help="Explicit grouping separator; grouping is validated")
+    parser.add_argument("--number-format-field", action="append", help="Limit decimal/grouping rules to this column; repeat for multiple columns")
+    parser.add_argument("--time-unit", choices=("seconds", "milliseconds"), help="Numeric source time unit; never inferred from magnitude")
+    parser.add_argument("--crs-override-reason", help="Source evidence for correcting a wrong declaration; does not convert coordinates")
     parser.add_argument("--sheet", help="Excel worksheet name; defaults to active sheet and records available sheets.")
     for role in ("lng", "lat", "value", "label", "category", "time"):
         parser.add_argument(f"--{role}-field")
     args = parser.parse_args()
     try:
-        result = profile(args.input, args.out_dir, args.crs, {role: getattr(args, f"{role}_field") for role in ("lng", "lat", "value", "label", "category", "time")}, args.sheet)
+        result = profile(args.input, args.out_dir, args.crs, {role: getattr(args, f"{role}_field") for role in ("lng", "lat", "value", "label", "category", "time")}, args.sheet, delimiter={"comma": ",", "semicolon": ";", "tab": "\t", "pipe": "|"}.get(args.delimiter, args.delimiter), decimal_separator=args.decimal_separator, thousands_separator=args.thousands_separator, time_unit=args.time_unit, crs_override_reason=args.crs_override_reason, number_format_fields=args.number_format_field)
     except (ValueError, OSError, json.JSONDecodeError, csv.Error) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2

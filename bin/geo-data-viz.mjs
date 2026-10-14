@@ -23,17 +23,21 @@ async function stat(path) {
   try { return await lstat(path); } catch (error) { if (error.code === 'ENOENT') return null; throw error; }
 }
 async function listFiles() {
-  const files = ['SKILL.md', 'requirements-excel.txt'];
+  const files = ['LICENSE', 'SKILL.md', 'requirements-excel.txt'];
   async function walk(rel, extension) {
     for (const entry of await readdir(join(root, rel), {withFileTypes:true})) {
       const path = join(rel, entry.name);
       if (entry.isDirectory()) await walk(path, extension);
-      else if (entry.isFile() && extname(entry.name) === extension) files.push(path);
+      else if (entry.isFile() && (!extension || extname(entry.name) === extension)) files.push(path);
       else if (entry.isSymbolicLink()) throw Error(`Unexpected symbolic link in package: ${path}`);
     }
   }
   await walk('agents', '.yaml'); await walk('scripts', '.py');
-  await walk('references', '.md'); await walk('assets/adapters', '.mjs'); await walk('assets/recipes', '.mjs');
+  await walk('references', '.md'); await walk('assets/adapters', '.mjs');
+  await walk('assets/recipes', '.mjs'); await walk('assets/shared', '.mjs');
+  await walk('assets/components', '.mjs');
+  for (const rel of ['package.json','remotion.config.ts','tsconfig.json','gitignore.txt',
+                    'src/index.jsx','src/SceneComposition.jsx','scripts/record-render.mjs']) files.push(join('assets/video',rel));
   return files.sort();
 }
 async function main(args) {
@@ -90,6 +94,6 @@ async function main(args) {
   } finally { await rm(stage,{recursive:true,force:true}); }
   console.log(`Installed ${files.length} skill files.`);
   if (backup) console.log(`Previous version preserved: ${backup}`);
-  console.log('Use the installed skill with your data and authorized map key. Codex: $geo-data-viz; Claude Code: /geo-data-viz (install into its .claude/skills directory).');
+  console.log('Use the installed skill with your data. No provider or key: MapLibre + OpenFreeMap for flat maps; explicit globe requests can use the keyless Globe.GL mode. Explicit provider: reuse its authorized credentials. Codex: $geo-data-viz; Claude Code: /geo-data-viz (install into its .claude/skills directory). Restart the agent if the skill is not listed.');
 }
 main(process.argv.slice(2)).catch(error=>{console.error(error.message);process.exitCode=1;});

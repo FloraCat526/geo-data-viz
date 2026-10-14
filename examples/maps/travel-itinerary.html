@@ -1,0 +1,402 @@
+<!doctype html><!-- MIT License
+
+Copyright (c) 2026 FloraCat526
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ -->
+<html data-demo-kind="itinerary" lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>新加坡两日漫游 · 示例行程</title><link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css">
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;color:#1d1d1f}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden}
+button{font:inherit;cursor:pointer}
+#map{position:fixed;inset:0}
+.panel{position:absolute;z-index:3;top:24px;right:24px;width:344px;max-height:calc(100vh - 48px);min-height:0;display:flex;flex-direction:column;padding:24px;border:1px solid #e9eaec;border-radius:22px;background:#fffffff7;box-shadow:0 18px 48px #2536481f;backdrop-filter:blur(20px)}
+.panel-head{display:flex;flex-direction:column;gap:7px;margin-bottom:20px}
+.panel h1{margin:0;font-size:25px;font-weight:750;line-height:1.2;letter-spacing:-.045em;overflow-wrap:anywhere}
+.count{color:#86868b;font-size:12px;font-weight:600;letter-spacing:.01em}
+.day-tabs{display:flex;gap:3px;overflow-x:auto;padding:3px;background:#f1f2f4;border-radius:11px;scrollbar-width:none}
+.day-tabs::-webkit-scrollbar{display:none}
+.day-tabs button{flex:1;white-space:nowrap;border:0;border-radius:8px;padding:9px 10px;background:transparent;color:#6e7178;font-size:12px;font-weight:650;transition:background .18s,color .18s}
+.day-tabs button[aria-selected="true"]{background:#fff;color:#242a32;box-shadow:0 1px 5px #15253618}
+.day-tabs button:focus-visible,.day-card:focus-visible,.stop:focus-visible{outline:2px solid #007aff;outline-offset:2px}
+.list{flex:0 1 auto;min-height:0;overflow:auto;padding-top:9px;scrollbar-color:#d7d9dd transparent}
+.day-card,.stop{width:100%;display:flex;align-items:center;gap:12px;padding:15px 2px;border:0;border-bottom:1px solid #eceef0;border-radius:0;background:transparent;text-align:left;margin:0}
+.day-card:last-child,.stop:last-child{border-bottom:0}
+.day-card:hover,.stop:hover{background:#f6f7f8}
+.day-card .swatch{height:29px;width:4px;border-radius:4px;flex:0 0 4px}
+.day-card strong,.stop strong{display:block;font-size:13px;font-weight:650;color:#23282f}
+.day-card small,.stop small{display:block;margin-top:5px;color:#858992;font-size:11px;line-height:1.45}
+.day-card .arrow{margin-left:auto;color:#a5a9af;font-size:21px;line-height:1}
+.stop .num{display:grid;place-items:center;width:28px;height:28px;flex:0 0 28px;border-radius:50%;background:var(--day-color);color:#fff;font-size:11px;font-weight:700}
+.stop.active strong{color:var(--day-color)}
+.stop .when{margin-left:auto;color:#969aa2;font-size:11px;white-space:nowrap}
+.note{margin:13px 0 0;color:#999da5;font-size:10px;line-height:1.4}
+.note:empty{display:none}
+.status{position:absolute;z-index:4;left:24px;bottom:24px;max-width:340px;padding:10px 13px;border-radius:10px;background:#fffffff0;color:#596b79;font-size:11px;box-shadow:0 6px 20px #18344916}
+.status:empty{display:none}
+.maplibregl-ctrl-top-right{right:380px;top:24px}
+.maplibregl-ctrl-bottom-right{right:8px;bottom:8px;z-index:5}
+.map-loading .maplibregl-ctrl-attrib{visibility:hidden}
+.popup{min-width:240px;max-width:310px;padding:18px 20px 19px;border-top:3px solid var(--stop-accent,#37699c);font-family:inherit}
+.popup-top{display:flex;align-items:center;gap:7px;margin:0 22px 10px 0}
+.popup .step{font-size:10px;font-weight:750;color:var(--stop-accent,#37699c)}
+.popup .tag{display:inline-block;padding:4px 8px;border-radius:99px;background:color-mix(in srgb,var(--stop-accent,#37699c) 10%,white);color:var(--stop-accent,#37699c);font-size:10px;font-weight:650}
+.popup h3{margin:0;font-size:18px;line-height:1.3;letter-spacing:-.025em;color:#1d1d1f}
+.popup .time{display:block;margin-top:7px;color:#86868b;font-size:11px;font-weight:650}
+.popup p{margin:11px 0 0;color:#59616c;font-size:12px;line-height:1.6}
+.popup dl{margin:12px 0 0;display:grid;gap:8px}
+.popup dl div{border-top:1px solid #eceef0;padding-top:8px}
+.popup dt{font-size:10px;color:#8b8e94}
+.popup dd{margin:3px 0 0;color:#444a53;font-size:11px;line-height:1.5}
+.maplibregl-popup-content{padding:0;border-radius:16px;overflow:hidden;box-shadow:0 16px 42px #0e2a3b2b}
+.maplibregl-popup-close-button{top:10px;right:11px;width:25px;height:25px;border-radius:50%;color:#81858c;font-size:18px}
+.maplibregl-popup-close-button:hover{background:#f1f2f4;color:#323842}
+@media(max-width:760px){
+ .panel{top:auto;right:12px;bottom:48px;left:12px;width:auto;height:min(43vh,365px);max-height:none;padding:18px;border-radius:20px}
+ .panel-head{gap:5px;margin-bottom:15px}
+ .panel h1{font-size:21px}
+ .list{padding-top:6px}
+ .note{display:none}
+ .status{left:12px;bottom:calc(min(43vh,365px) + 58px)}
+ .maplibregl-ctrl-top-right{right:12px;top:16px}
+}
+</style><link rel="stylesheet" href="../assets/demo-panels.css"></head><body class="map-loading"><div id="map"></div><section class="panel" aria-label="旅行行程"><div class="panel-head"><h1 id="title"></h1><span id="count" class="count"></span></div><div id="tabs" class="day-tabs" role="tablist" aria-label="选择日期"></div><div id="list" class="list"></div><p id="note" class="note"></p></section><p id="status" class="status" role="status">地图加载中…</p><script id="itinerary-data" type="application/json">{"metadata": {"dataCrs": "wgs84"}, "title": "新加坡两日漫游 · 示例行程", "days": [{"id": "day-1", "label": "第 1 天", "color": "#37699c", "stops": [{"id": "botanic-gardens", "name": "新加坡植物园", "coordinates": [103.8159, 1.3138], "time": "09:00", "tag": "园林散步", "summary": "从绿地开始一天的城市漫游。"}, {"id": "fort-canning", "name": "福康宁公园", "coordinates": [103.8454, 1.2942], "time": "13:30", "tag": "城市绿地", "summary": "在城市中心安排一段步行与休息。"}, {"id": "national-gallery", "name": "新加坡国家美术馆", "coordinates": [103.8511, 1.2903], "time": "16:00", "tag": "文化场馆", "summary": "以城市文化场馆结束第一天。"}], "date": "2026-10-12"}, {"id": "day-2", "label": "第 2 天", "color": "#c57c48", "stops": [{"id": "merlion-park", "name": "鱼尾狮公园", "coordinates": [103.8545, 1.2867], "time": "09:30", "tag": "海湾视角", "summary": "从滨水空间开始第二天。"}, {"id": "artsci-museum", "name": "艺术科学博物馆", "coordinates": [103.8593, 1.2863], "time": "13:00", "tag": "展览场馆", "summary": "将室内参观安排在午后。"}, {"id": "gardens-by-the-bay", "name": "滨海湾花园", "coordinates": [103.8646, 1.2816], "time": "17:00", "tag": "夜景收尾", "summary": "以海湾周边的开放空间收尾。"}], "date": "2026-10-13"}]}</script><script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script><script type="module">
+/** Geo Data Viz — MIT. MapLibre-native itinerary map layers; no routing or geocoding. */
+const collection = features => ({type: 'FeatureCollection', features});
+const idPattern = /^[A-Za-z][\w-]*$/;
+
+function labelChip() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 76; canvas.height = 56;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#ffffff';
+  ctx.strokeStyle = '#dce5e9';
+  ctx.lineWidth = 1.5;
+  ctx.shadowColor = '#18364b29';
+  ctx.shadowBlur = 8;
+  ctx.shadowOffsetY = 3;
+  ctx.beginPath();
+  ctx.moveTo(18, 5); ctx.lineTo(58, 5); ctx.quadraticCurveTo(71, 5, 71, 18);
+  ctx.lineTo(71, 38); ctx.quadraticCurveTo(71, 51, 58, 51);
+  ctx.lineTo(18, 51); ctx.quadraticCurveTo(5, 51, 5, 38);
+  ctx.lineTo(5, 18); ctx.quadraticCurveTo(5, 5, 18, 5);
+  ctx.closePath(); ctx.fill();
+  ctx.shadowColor = 'transparent'; ctx.stroke();
+  return ctx.getImageData(0, 0, 76, 56);
+}
+
+function coordinate(value) {
+  if (!Array.isArray(value) || value.length !== 2 || !value.every(Number.isFinite) || Math.abs(value[0]) > 180 || Math.abs(value[1]) > 85) {
+    throw new Error('Coordinates must be WGS84 [longitude, latitude] within MapLibre Mercator bounds');
+  }
+  return [...value];
+}
+
+function shortText(value, field, max = 500) {
+  if (value == null) return '';
+  if (typeof value !== 'string' || value.length > max) throw new Error(`${field} must be text of at most ${max} characters`);
+  return value.trim();
+}
+
+function color(value) {
+  if (typeof value !== 'string' || !/^#[0-9a-fA-F]{6}$/.test(value)) throw new Error('Day color must be #RRGGBB');
+  return value;
+}
+
+/** Normalize only supplied values. Missing route geometry becomes an explicitly schematic connection. */
+export function normalizeItinerary(input) {
+  if (!input || !Array.isArray(input.days) || !input.days.length) throw new Error('Itinerary requires at least one day');
+  const dayIds = new Set(), stopIds = new Set();
+  const palette = ['#37699c', '#c57c48', '#657f70', '#a66d8c', '#7469a6'];
+  const days = input.days.map((day, index) => {
+    if (!day || typeof day !== 'object') throw new Error('Each day must be an object');
+    const id = shortText(day.id ?? `day-${index + 1}`, 'day.id', 80);
+    if (!idPattern.test(id) || dayIds.has(id)) throw new Error('Day IDs must be unique and URL-safe');
+    dayIds.add(id);
+    const label = shortText(day.label ?? `第 ${index + 1} 天`, 'day.label', 80);
+    const date = shortText(day.date, 'day.date', 32);
+    if (date && !/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error('day.date must be YYYY-MM-DD');
+    if (!Array.isArray(day.stops)) throw new Error('day.stops must be an array');
+    const stops = (day.stops ?? []).map((stop, stopIndex) => {
+      if (!stop || typeof stop !== 'object') throw new Error('Each stop must be an object');
+      const stopId = shortText(stop.id, 'stop.id', 80);
+      if (!idPattern.test(stopId) || stopIds.has(stopId)) throw new Error('Stop IDs must be unique and URL-safe');
+      stopIds.add(stopId);
+      const name = shortText(stop.name, 'stop.name', 120);
+      if (!name) throw new Error('Every stop needs a name');
+      if (stop.details != null && !Array.isArray(stop.details)) throw new Error('stop.details must be an array');
+      const details = (stop.details ?? []).map(item => ({
+        label: shortText(item?.label, 'detail.label', 80),
+        text: shortText(item?.text, 'detail.text', 500)
+      })).filter(item => item.label && item.text);
+      return {
+        id: stopId, dayId: id, order: stopIndex + 1, name,
+        coordinates: coordinate(stop.coordinates),
+        time: shortText(stop.time, 'stop.time', 80),
+        tag: shortText(stop.tag, 'stop.tag', 80),
+        summary: shortText(stop.summary, 'stop.summary', 1000), details
+      };
+    });
+    if (!stops.length) throw new Error('Each day needs at least one stop');
+    let route = null;
+    if (day.route != null) {
+      if (day.route.type !== 'LineString' || !Array.isArray(day.route.coordinates) || day.route.coordinates.length < 2) throw new Error('day.route must be a LineString with at least two vertices');
+      route = day.route.coordinates.map(coordinate);
+      if (route.some((point, i) => i && Math.abs(point[0] - route[i - 1][0]) > 180)) throw new Error('Split paths at the antimeridian before displaying');
+    }
+    return {id, label, date, color: color(day.color ?? palette[index % palette.length]), stops,
+      route, routeKind: route ? 'provided' : 'schematic'};
+  });
+  return {title: shortText(input.title ?? '旅行规划', 'title', 150), days};
+}
+
+export function itineraryGeoJSON(itinerary) {
+  const stops = [], routes = [];
+  const longitudes = itinerary.days.flatMap(day => day.stops.map(stop => stop.coordinates[0]));
+  const midpoint = (Math.min(...longitudes) + Math.max(...longitudes)) / 2;
+  for (const day of itinerary.days) {
+    for (const stop of day.stops) stops.push({type: 'Feature', id: stop.id,
+      properties: {id: stop.id, dayId: day.id, order: String(stop.order), name: stop.name, color: day.color,
+        labelSide: stop.coordinates[0] <= midpoint ? 'west' : 'east'},
+      geometry: {type: 'Point', coordinates: stop.coordinates}});
+    const coordinates = day.route ?? day.stops.map(stop => stop.coordinates);
+    if (coordinates.length > 1) routes.push({type: 'Feature', id: day.id,
+      properties: {dayId: day.id, kind: day.routeKind, color: day.color},
+      geometry: {type: 'LineString', coordinates}});
+  }
+  return {stops: collection(stops), routes: collection(routes)};
+}
+
+export class TravelItineraryLayer {
+  constructor(map, {provider = 'maplibre', id = 'geo-itinerary', data, padding = {top: 110, right: 420, bottom: 90, left: 60}, onSelect = () => {}} = {}) {
+    if (provider !== 'maplibre') throw new Error('Use the selected map provider’s native map layers');
+    if (!map?.isStyleLoaded()) throw new Error('Create TravelItineraryLayer after MapLibre style load');
+    if (!idPattern.test(id)) throw new Error('Invalid component ID');
+    this.map = map; this.id = id; this.padding = padding; this.onSelect = onSelect;
+    this.data = normalizeItinerary(data); this.dayId = null; this.stopId = null; this.destroyed = false;
+    const geo = itineraryGeoJSON(this.data);
+    this.sources = {routes: `${id}-routes`, stops: `${id}-stops`};
+    this.labelImage = `${id}-name-chip`;
+    this.layers = [`${id}-route-case`, `${id}-route-provided`, `${id}-route-schematic`, `${id}-stop-halo`, `${id}-stop-core`, `${id}-stop-label`, `${id}-stop-selected`, `${id}-stop-name`];
+    if (Object.values(this.sources).some(source => map.getSource(source)) || this.layers.some(layer => map.getLayer(layer)) || map.hasImage(this.labelImage)) throw new Error('Component ID already exists');
+    map.addImage(this.labelImage, labelChip(), {pixelRatio: 2, stretchX: [[24, 52]], stretchY: [[20, 36]], content: [17, 11, 59, 45]});
+    map.addSource(this.sources.routes, {type: 'geojson', data: geo.routes});
+    map.addSource(this.sources.stops, {type: 'geojson', data: geo.stops});
+    const route = this.sources.routes, stops = this.sources.stops;
+    map.addLayer({id: this.layers[0], type: 'line', source: route, paint: {'line-color': '#ffffff', 'line-width': 7, 'line-opacity': .88}, layout: {'line-cap': 'round', 'line-join': 'round'}});
+    map.addLayer({id: this.layers[1], type: 'line', source: route, filter: ['==', ['get', 'kind'], 'provided'], paint: {'line-color': ['get', 'color'], 'line-width': 3.4}, layout: {'line-cap': 'round', 'line-join': 'round'}});
+    map.addLayer({id: this.layers[2], type: 'line', source: route, filter: ['==', ['get', 'kind'], 'schematic'], paint: {'line-color': ['get', 'color'], 'line-width': 3, 'line-dasharray': [1.6, 1.35]}, layout: {'line-cap': 'round', 'line-join': 'round'}});
+    map.addLayer({id: this.layers[3], type: 'circle', source: stops, paint: {'circle-radius': 16, 'circle-color': '#fff', 'circle-opacity': .94}});
+    map.addLayer({id: this.layers[4], type: 'circle', source: stops, paint: {'circle-radius': 12.5, 'circle-color': ['get', 'color'], 'circle-stroke-width': 1, 'circle-stroke-color': '#fff'}});
+    map.addLayer({id: this.layers[5], type: 'symbol', source: stops, layout: {'text-field': ['get', 'order'], 'text-size': 12, 'text-font': ['Noto Sans Regular'], 'text-allow-overlap': true}, paint: {'text-color': '#fff'}});
+    map.addLayer({id: this.layers[6], type: 'circle', source: stops, filter: ['==', ['get', 'id'], ''], paint: {'circle-radius': 17, 'circle-color': '#fff', 'circle-opacity': 0, 'circle-stroke-color': '#173047', 'circle-stroke-width': 2.5}});
+    map.addLayer({id: this.layers[7], type: 'symbol', source: stops,
+      layout: {'text-field': ['get', 'name'], 'text-size': 12, 'text-font': ['Noto Sans Regular'],
+        'icon-image': this.labelImage, 'icon-text-fit': 'both',
+        'text-variable-anchor-offset': ['case', ['==', ['get', 'labelSide'], 'west'],
+          ['literal', ['left', [2, 0], 'top', [0, 2], 'bottom', [0, 2], 'right', [2, 0]]],
+          ['literal', ['right', [2, 0], 'top', [0, 2], 'bottom', [0, 2], 'left', [2, 0]]]],
+        'text-justify': 'auto', 'text-padding': 4, 'text-max-width': 12},
+      paint: {'text-color': '#203b50'}});
+    this.click = event => {const hit = event.features?.[0]; if (hit) this.selectStop(hit.properties.id, {fly: false});};
+    this.enter = () => {map.getCanvas().style.cursor = 'pointer';};
+    this.leave = () => {map.getCanvas().style.cursor = '';};
+    this.remove = () => this.destroy();
+    for (const layer of [this.layers[4], this.layers[7]]) {
+      map.on('click', layer, this.click); map.on('mouseenter', layer, this.enter); map.on('mouseleave', layer, this.leave);
+    }
+    map.on('remove', this.remove);
+  }
+
+  setDay(dayId = null, {fit = true} = {}) {
+    if (this.destroyed) return;
+    if (dayId !== null && !this.data.days.some(day => day.id === dayId)) throw new Error('Unknown itinerary day');
+    this.dayId = dayId; this.stopId = null;
+    const dayFilter = dayId === null ? ['all'] : ['==', ['get', 'dayId'], dayId];
+    for (const layer of this.layers.slice(0, 6)) {
+      const kind = layer === this.layers[1] ? 'provided' : layer === this.layers[2] ? 'schematic' : null;
+      this.map.setFilter(layer, kind ? ['all', dayFilter, ['==', ['get', 'kind'], kind]] : dayFilter);
+    }
+    this.map.setFilter(this.layers[7], dayFilter);
+    this.map.setFilter(this.layers[6], ['==', ['get', 'id'], '']);
+    if (fit) this.fit();
+  }
+
+  fit() {
+    if (this.destroyed) return;
+    const days = this.dayId ? this.data.days.filter(day => day.id === this.dayId) : this.data.days;
+    const coordinates = days.flatMap(day => [...day.stops.map(stop => stop.coordinates), ...(day.route ?? [])]);
+    const lng = coordinates.map(p => p[0]), lat = coordinates.map(p => p[1]);
+    const west = Math.min(...lng), east = Math.max(...lng), south = Math.min(...lat), north = Math.max(...lat);
+    if (east - west > 180) throw new Error('Split itinerary at the antimeridian before fitting the map');
+    if (west === east && south === north) this.map.easeTo({center: [west, south], zoom: 13, padding: this.padding, duration: 0});
+    else this.map.fitBounds([[west, south], [east, north]], {padding: this.padding, maxZoom: this.dayId ? 14.3 : 13, duration: 500});
+  }
+
+  selectStop(stopId, {fly = true} = {}) {
+    if (this.destroyed) return;
+    const stop = this.data.days.flatMap(day => day.stops).find(item => item.id === stopId);
+    if (!stop) throw new Error('Unknown itinerary stop');
+    if (this.dayId && stop.dayId !== this.dayId) this.setDay(stop.dayId, {fit: false});
+    this.stopId = stopId;
+    this.map.setFilter(this.layers[6], ['==', ['get', 'id'], stopId]);
+    if (fly) this.map.flyTo({center: stop.coordinates, zoom: Math.max(this.map.getZoom(), 12.8), duration: 650});
+    this.onSelect(stop);
+    return stop;
+  }
+
+  inspect() {
+    return {provider: 'maplibre', rendererOwner: 'provider-native', types: ['line', 'circle', 'symbol'], days: this.data.days.length,
+      stops: this.data.days.reduce((sum, day) => sum + day.stops.length, 0), providedRoutes: this.data.days.filter(day => day.route).length,
+      schematicRoutes: this.data.days.filter(day => !day.route && day.stops.length > 1).length, selectedDay: this.dayId, selectedStop: this.stopId};
+  }
+
+  destroy() {
+    if (this.destroyed) return;
+    this.destroyed = true;
+    for (const layer of [this.layers[4], this.layers[7]]) {
+      this.map.off('click', layer, this.click); this.map.off('mouseenter', layer, this.enter); this.map.off('mouseleave', layer, this.leave);
+    }
+    this.map.off('remove', this.remove);
+    for (const layer of [...this.layers].reverse()) if (this.map.getLayer(layer)) this.map.removeLayer(layer);
+    for (const source of Object.values(this.sources)) if (this.map.getSource(source)) this.map.removeSource(source);
+    if (this.map.hasImage(this.labelImage)) this.map.removeImage(this.labelImage);
+  }
+}
+
+// Native SDK basemaps. Imagery and elevation resources are explicit and attributed.
+const basemapOwners = new WeakMap();
+function basemapFail(message){throw new TypeError(`Basemap: ${message}`);}
+function basemapUrl(value,{mapbox=false,tiles=false}={}){
+ if(typeof value!=='string'||!value.trim()||/\s/.test(value))basemapFail('resource URL must be HTTPS');
+ if(mapbox&&value.startsWith('mapbox:')){
+  if(!/^mapbox:\/\/(?:styles\/[\w.-]+\/[\w.-]+|mapbox\.[\w.-]+)$/.test(value))basemapFail('invalid Mapbox resource URL');
+ }else{let url;try{url=new URL(value);}catch{basemapFail('resource URL must be HTTPS');}if(url.protocol!=='https:'||!url.hostname||url.username||url.password||url.hash)basemapFail('resource URL must be HTTPS without credentials or fragments');}
+ if(tiles&&!['{z}','{x}','{y}'].every(marker=>value.includes(marker)))basemapFail('tile template needs {z}, {x}, and {y} in Web Mercator XYZ order');
+ return value;
+}
+function basemapAttribution(value){
+ if(typeof value!=='string'||!value.trim()||value.length>2000)basemapFail('source attribution is required');
+ const text=value.replace(/<a href="([^"]+)"(?: target="_blank")?(?: rel="(?:noopener|noreferrer|noopener noreferrer)")?>([^<>]*)<\/a>/g,(_,url,text)=>{basemapUrl(url);return text;});
+ if(/[<>]/.test(text)||/&(?:lt|gt|#0*6[02]|#x0*3[ce]);/i.test(text))basemapFail('attribution supports text and HTTPS links only');
+ return value;
+}
+function basemapNativeImageryStyle(style,provider){
+ if(provider==='mapbox'&&['satellite-v9','satellite-streets-v12'].some(name=>style==='mapbox:'+'//styles/mapbox/'+name))return true;
+ const url=new URL(style);return url.protocol==='https:'&&url.hostname==='api.maptiler.com'&&url.pathname==='/maps/satellite/style.json'&&!!url.searchParams.get('key');
+}
+function basemapSource(raw,{terrain=false,provider}={}){
+ const keys=['url','tiles','tileSize','attribution','minzoom','maxzoom',...(terrain?['encoding','exaggeration']:[])];
+ if(!raw||typeof raw!=='object'||Array.isArray(raw)||Object.keys(raw).some(key=>!keys.includes(key)))basemapFail('source has unknown fields');
+ if(Object.hasOwn(raw,'url')===Object.hasOwn(raw,'tiles'))basemapFail('provide exactly one source URL or tiles array');
+ const result={...raw};
+ if(Object.hasOwn(raw,'url'))basemapUrl(raw.url,{mapbox:provider==='mapbox'});
+ else{if(!Array.isArray(raw.tiles)||raw.tiles.length<1||raw.tiles.length>8)basemapFail('tiles must contain one to eight HTTPS XYZ templates');result.tiles=raw.tiles.map(url=>basemapUrl(url,{tiles:true}));}
+ if(![256,512,514].includes(raw.tileSize??256))basemapFail('tileSize must match the source: 256, 512, or 514');
+ result.tileSize=raw.tileSize??256;result.attribution=basemapAttribution(raw.attribution);
+ for(const key of ['minzoom','maxzoom'])if(Object.hasOwn(raw,key)&&(!Number.isInteger(raw[key])||raw[key]<0||raw[key]>24))basemapFail('source zoom levels must be integers from 0 to 24');
+ if((raw.minzoom??0)>(raw.maxzoom??24))basemapFail('minzoom must not exceed maxzoom');
+ if(terrain){const encoding=raw.encoding??'mapbox',exaggeration=raw.exaggeration??1.5;if(!['mapbox','terrarium'].includes(encoding)||provider==='mapbox'&&encoding!=='mapbox')basemapFail('DEM encoding must be mapbox or terrarium');if(provider==='mapbox'&&raw.url!=='mapbox:'+'//mapbox.mapbox-terrain-dem-v1')basemapFail('Mapbox terrain requires the supported Terrain-DEM tileset');if(typeof exaggeration!=='number'||!Number.isFinite(exaggeration)||exaggeration<=0||exaggeration>10)basemapFail('terrain exaggeration must be greater than 0 and up to 10');Object.assign(result,{encoding,exaggeration});}
+ return result;
+}
+
+export function normalizeBasemap(config,{provider='maplibre',theme='dark'}={}){
+ if(!['maplibre','mapbox','maptiler'].includes(provider)||!['dark','light'].includes(theme))basemapFail('unsupported provider or theme');
+ config=config??{};
+ if(typeof config!=='object'||Array.isArray(config)||Object.keys(config).some(key=>!['type','styleUrl','imagery','terrain','showHillshade'].includes(key)))basemapFail('configuration has unknown fields');
+ const type=config.type??'vector';if(!['vector','imagery','terrain'].includes(type))basemapFail('type must be vector, imagery, or terrain');
+ if(type==='vector'&&['imagery','terrain','showHillshade'].some(key=>Object.hasOwn(config,key)))basemapFail('vector does not accept imagery or terrain options');
+ if(type==='imagery'&&['terrain','showHillshade'].some(key=>Object.hasOwn(config,key)))basemapFail('use type terrain to combine imagery and elevation');
+ if(Object.hasOwn(config,'showHillshade')&&typeof config.showHillshade!=='boolean')basemapFail('showHillshade must be boolean');
+ let styleUrl=config.styleUrl;
+ if(styleUrl===undefined){if(provider==='maptiler')basemapFail('MapTiler requires an explicit authorized styleUrl');styleUrl=provider==='mapbox'?'mapbox:'+'//styles/mapbox/'+(type==='imagery'?'satellite-streets-v12':type==='terrain'?'outdoors-v12':`${theme}-v11`):'https://tiles.openfreemap.org/styles/'+(theme==='light'?'positron':'dark');}
+ basemapUrl(styleUrl,{mapbox:provider==='mapbox'});const result={type,styleUrl};
+ if(Object.hasOwn(config,'imagery'))result.imagery=basemapSource(config.imagery,{provider});
+ else if(type==='imagery'&&!basemapNativeImageryStyle(styleUrl,provider))basemapFail('imagery requires an attributed tile source; vector styles are not satellite imagery');
+ if(type==='terrain'){const source=config.terrain??(provider==='mapbox'?{url:'mapbox:'+'//mapbox.mapbox-terrain-dem-v1',tileSize:512,encoding:'mapbox',attribution:'© Mapbox',exaggeration:1.5}:null);result.terrain=basemapSource(source,{terrain:true,provider});result.showHillshade=config.showHillshade??false;}
+ return result;
+}
+
+/** Register native imagery/DEM layers without replacing the map style or business data.
+ * Initialize new Map({style: normalizeBasemap(...).styleUrl}) before applying.
+ * ready resolves after registration, not tile loading; video capture must await map idle.
+ */
+export function applyBasemap(map,config,{provider='maplibre',theme='dark',id='geo-basemap'}={}){
+ const normalized=normalizeBasemap(config,{provider,theme});
+ if(!map||typeof map.addSource!=='function'||typeof map.addLayer!=='function'||typeof map.on!=='function')basemapFail('a native GL map instance is required');
+ if(typeof id!=='string'||!/^\w[\w-]*$/.test(id))basemapFail('id must contain only letters, digits, underscores, and hyphens');
+ let owners=basemapOwners.get(map);if(!owners){owners=new Map();basemapOwners.set(map,owners);}if(owners.has(id))basemapFail('id already belongs to another basemap controller');
+ const ids={imagery:`${id}-imagery`,raster:`${id}-raster`,dem:`${id}-dem`,hillshadeSource:`${id}-hillshade-dem`,hillshade:`${id}-hillshade`};
+ const sources=new Map(),layers=new Map();let disposed=false,registered=false,installing=false,error=null,timer,settled=false,resolveReady,rejectReady;
+ const ready=new Promise((resolve,reject)=>{resolveReady=resolve;rejectReady=reject;});
+ // Consumers may inspect asynchronous errors instead of awaiting ready; avoid an unhandled rejection.
+ ready.catch(()=>{});
+ const finish=err=>{if(settled)return;settled=true;clearTimeout(timer);err?rejectReady(err):resolveReady(controller);};
+ const source=(key,spec)=>{const current=map.getSource(key);if(current){if(sources.get(key)!==current)basemapFail(`source id collision: ${key}`);return;}map.addSource(key,spec);sources.set(key,map.getSource(key));};
+ const before=()=>{const style=map.getStyle();return style.layers?.find(layer=>layer.type==='symbol'||layer.type==='custom'||['geojson','canvas','video','image'].includes(style.sources?.[layer.source]?.type))?.id;};
+ const ownsLayer=key=>{const current=map.getLayer(key),owned=layers.get(key);return !!current&&!!owned&&current.type===owned.type&&current.source===owned.source&&sources.get(owned.source)===map.getSource(owned.source);};
+ const layer=(key,spec)=>{if(map.getLayer(key)){if(!ownsLayer(key))basemapFail(`layer id collision: ${key}`);return;}map.addLayer({id:key,...spec},before());layers.set(key,{type:spec.type,source:spec.source});};
+ const demSpec=()=>{const {exaggeration,...definition}=normalized.terrain;return {type:'raster-dem',...definition};};
+ const ownsResources=()=>[...sources].every(([key,owned])=>owned===map.getSource(key))&&[...layers.keys()].every(ownsLayer);
+ const terrainReady=()=>!normalized.terrain||(map.getTerrain?.()?.source===ids.dem&&map.getTerrain?.()?.exaggeration===normalized.terrain.exaggeration);
+ const events=['style.load','load','styledata','sourcedata','idle'];
+ function register(){if(disposed||installing||!map.isStyleLoaded())return;if(registered&&ownsResources()&&terrainReady())return;installing=true;try{
+  if(normalized.terrain){const projection=map.getProjection?.()?.type??'mercator';if(provider!=='mapbox'&&projection!=='mercator'||provider==='mapbox'&&!['mercator','globe'].includes(projection))basemapFail('terrain requires a supported geographic projection (MapLibre/MapTiler: mercator; Mapbox: mercator or globe)');}
+  if(normalized.imagery){source(ids.imagery,{type:'raster',...normalized.imagery});layer(ids.raster,{type:'raster',source:ids.imagery,paint:{'raster-opacity':1,'raster-fade-duration':0}});}
+  if(normalized.terrain){source(ids.dem,demSpec());map.setTerrain({source:ids.dem,exaggeration:normalized.terrain.exaggeration});if(normalized.showHillshade){source(ids.hillshadeSource,demSpec());layer(ids.hillshade,{type:'hillshade',source:ids.hillshadeSource,paint:{'hillshade-exaggeration':.4}});}}
+  registered=true;error=null;finish();
+ }catch(err){registered=false;error=err;finish(err);}finally{installing=false;}}
+ const controller={config:normalized,ready,inspect(){return {type:normalized.type,styleUrl:normalized.styleUrl,registered:!disposed&&registered&&ownsResources()&&terrainReady(),imagery:normalized.type==='imagery'||!!normalized.imagery,terrain:!!normalized.terrain,showHillshade:normalized.showHillshade??false,error:error?.message??null};},destroy(){if(disposed)return;disposed=true;clearTimeout(timer);for(const event of events)map.off(event,register);if(!settled)finish(Error('Basemap disposed before its style became ready'));try{if(map.getTerrain?.()?.source===ids.dem&&sources.get(ids.dem)===map.getSource(ids.dem))map.setTerrain(null);for(const key of [...layers.keys()].reverse())if(ownsLayer(key))map.removeLayer(key);for(const [key,owned] of [...sources].reverse())if(map.getSource(key)===owned)map.removeSource(key);}finally{owners.delete(id);registered=false;}}};
+ owners.set(id,controller);for(const event of events)map.on(event,register);timer=setTimeout(()=>{error=Error('Basemap style did not become ready');finish(error);},20000);register();return controller;
+}
+
+// Constructors that require a loaded style can await TileJSON/source initialization.
+// This is not a complete tilesLoaded/idle test for screenshots or video capture.
+export function waitForBasemapStyle(map,{timeoutMs=20000}={}){
+ if(map.isStyleLoaded())return Promise.resolve();
+ return new Promise((resolve,reject)=>{let timer;const events=['idle','sourcedata','styledata'],cleanup=()=>{clearTimeout(timer);for(const event of events)map.off(event,check);},check=()=>{if(map.isStyleLoaded()){cleanup();resolve();}};timer=setTimeout(()=>{cleanup();reject(Error('Basemap resources did not become ready'));},timeoutMs);for(const event of events)map.on(event,check);check();});
+}
+
+const basemapConfig={"type": "vector", "styleUrl": "https://tiles.openfreemap.org/styles/positron"};
+const raw=JSON.parse(document.getElementById('itinerary-data').textContent),$=id=>document.getElementById(id);
+let map,journey,popup,basemapController;
+function text(tag,value,cls){const el=document.createElement(tag);el.textContent=value;if(cls)el.className=cls;return el;}
+function showPopup(stop){popup?.remove();const body=document.createElement('div');body.className='popup';const day=journey.data.days.find(item=>item.id===stop.dayId);body.style.setProperty('--stop-accent',day?.color??'#37699c');const top=document.createElement('div');top.className='popup-top';top.append(text('span',`${day?.label??'行程'} · 第 ${stop.order} 站`,'step'));if(stop.tag)top.append(text('span',stop.tag,'tag'));body.append(top,text('h3',stop.name));if(stop.time)body.append(text('span',stop.time,'time'));if(stop.summary)body.append(text('p',stop.summary));if(stop.details.length){const list=document.createElement('dl');for(const item of stop.details){const row=document.createElement('div');row.append(text('dt',item.label),text('dd',item.text));list.append(row);}body.append(list);}popup=new maplibregl.Popup({offset:22,maxWidth:'340px'}).setLngLat(stop.coordinates).setDOMContent(body).addTo(map);render();}
+function render(){const data=journey.data,selected=data.days.find(day=>day.id===journey.dayId),days=data.days,stopCount=days.reduce((n,day)=>n+day.stops.length,0);$('title').textContent=data.title;$('count').textContent=selected?`${selected.date?selected.date+' · ':''}${selected.stops.length} 个地点`:`${days.length} 天 · ${stopCount} 个地点`;
+ $('tabs').replaceChildren();for(const day of [null,...days]){const button=text('button',day?.label??'总览');button.type='button';button.role='tab';button.setAttribute('aria-selected',String(journey.dayId===(day?.id??null)));button.onclick=()=>{popup?.remove();journey.setDay(day?.id??null);render();};$('tabs').append(button);}
+ $('list').replaceChildren();
+ if(!selected){for(const day of days){const button=document.createElement('button');button.className='day-card';button.type='button';const swatch=text('span','', 'swatch');swatch.style.background=day.color;const body=document.createElement('span');body.append(text('strong',day.label+(day.date?' · '+day.date:'')),text('small',`${day.stops.length} 站 · ${day.stops[0].name} → ${day.stops.at(-1).name}`));button.append(swatch,body,text('span','›','arrow'));button.onclick=()=>{journey.setDay(day.id);render();};$('list').append(button);}}
+ else for(const stop of selected.stops){const button=document.createElement('button');button.className='stop'+(journey.stopId===stop.id?' active':'');button.type='button';button.style.setProperty('--day-color',selected.color);button.append(text('span',String(stop.order),'num'));const body=document.createElement('span');body.append(text('strong',stop.name));if(stop.tag||stop.summary)body.append(text('small',stop.tag||stop.summary));button.append(body);if(stop.time)button.append(text('span',stop.time,'when'));button.onclick=()=>journey.selectStop(stop.id);$('list').append(button);}
+ const schematic=(selected?[selected]:days).some(day=>day.routeKind==='schematic'&&day.stops.length>1);$('note').textContent=schematic?'虚线仅示顺序，非实际道路':'';$('status').textContent='';}
+function fitPadding(){return innerWidth<=760?{top:70,right:100,bottom:Math.min(innerHeight*.43,365)+96,left:100}:{top:70,right:400,bottom:70,left:60};}
+function onResize(){if(!journey)return;journey.padding=fitPadding();map.resize();journey.fit();}
+try{
+ const data=normalizeItinerary(raw);
+ map=new maplibregl.Map({container:'map',style:basemapConfig.styleUrl,center:data.days[0].stops[0].coordinates,zoom:10,attributionControl:{compact:true}});
+ map.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-right');
+ // MapLibre's compact control starts expanded until the first map movement.
+ const collapseAttribution=()=>{const attribution=map.getContainer().querySelector('details.maplibregl-ctrl-attrib');if(attribution){attribution.open=false;attribution.classList.remove('maplibregl-compact-show');}document.body.classList.remove('map-loading');};
+ map.on('error',()=>{if(document.body.classList.contains('map-loading'))collapseAttribution();$('status').textContent='地图资源加载失败，请检查网络后刷新。';});
+ map.on('load',async()=>{try{basemapController=applyBasemap(map,basemapConfig,{theme:'light'});await basemapController.ready;await waitForBasemapStyle(map);if(basemapConfig.type==='terrain')map.setPitch(50);journey=new TravelItineraryLayer(map,{data,padding:fitPadding(),onSelect:showPopup});if(innerWidth<=760)journey.setDay(data.days[0].id,{fit:false});journey.fit();render();collapseAttribution();}catch(error){$('status').textContent='行程无法显示：'+error.message;}});
+ window.addEventListener('resize',onResize);
+ window.addEventListener('pagehide',()=>{window.removeEventListener('resize',onResize);popup?.remove();journey?.destroy();basemapController?.destroy();map?.remove();},{once:true});
+}catch(error){$('status').textContent='行程数据不完整：'+error.message;}
+</script></body></html>

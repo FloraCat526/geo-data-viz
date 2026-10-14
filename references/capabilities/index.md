@@ -1,15 +1,20 @@
-# 六家地图可视化能力索引
+# 地图可视化能力索引
 
-核查日期：2026-09-13。用于从数据与目标选择实现路线，不是 SDK 全量手册，也不是本项目已实现图层清单。仅阅读用户所选平台的文档；未选平台时先用本表比较，再读候选平台。
+各家图商文档核查日期：2026-09-13；MapLibre/OpenFreeMap 新增核查：2026-09-21。用于从数据与目标选择实现路线，不是 SDK 全量手册，也不是本项目已实现图层清单。只阅读本次使用的平台文档；未指定图商且无已授权配置时，直接采用 MapLibre + OpenFreeMap，不要求用户先比较或选图商。
+
+- [MapLibre + OpenFreeMap](maplibre.md)：免 Key 默认组合；原生 circle/heatmap/line/fill/fill-extrusion 与聚合，已提供 HTML 打包入口及独立能力表。
 
 - [Google Maps](google.md)：Data、Advanced Markers、官方维护聚合扩展、Polyline；连续热力存在能力缺口。
 - [Mapbox](mapbox.md)：数据驱动的 circle/heatmap/line/fill/fill-extrusion、聚合、自定义层。
-- [Maptec](maptec.md)：GeoJSONOverlay、CircleOverlay、热力、飞线、棱柱、轨迹。
+- [MapTiler](maptiler.md)：场景叙事的 MapTiler SDK 镜头、影像与地形路线；需授权 Key。常规统一数据组件仍按其已验证引擎范围选择。
+- [CesiumJS](cesium.md)：场景叙事的三维地形、影像与 3D Tiles 镜头；不是地球数据组件的 Globe.GL 替代名。
 - [百度地图](baidu.md)：JSAPI 基础图层与 MapVGL 点线面、聚合、波纹和飞线。
 - [高德地图](amap.md)：JSAPI 2.0 与 Loca 2.x 点线面、呼吸、热力、网格、脉冲。
 - [腾讯地图](tencent.md)：TMap GL 与 visualization 的 Dot/Heat/Arc/Trail 等。
 
 选型步骤见 [数据到效果的匹配规则](../selection.md)，接入与坐标要求见 [跨地图接入](../providers.md)。
+
+矢量、影像和地形按[底图配置](../basemaps.md)独立选择；默认 OpenFreeMap 仍为免 Key 矢量底图。静态图片地图、镜头叙事及 Remotion 视频在[场景叙事](../scene-narrative.md)中组织，不扩充为第四类能力。新增影像/地形与场景路线核查日期：2026-10-08；文档支持与实际资源验收分别记录。
 
 ## 如何读能力表
 
@@ -27,20 +32,20 @@
 
 各单元格优先列原生/官方扩展路线；“缺口”表示未核实该图商的原生效果，允许进一步评估第三方或自绘补充。具体输入、依赖和限制以对应平台文档为准；按 [渲染归属](../provider-rendering.md) 分开记录补充能力，不将其填成图商原生支持。
 
-| 数据表达 | Google | Mapbox | Maptec | 百度 | 高德 | 腾讯 |
-|---|---|---|---|---|---|---|
-| 散点 / 数量气泡 | Data 点样式 / AdvancedMarker | 原生 circle | 原生 GeoJSONOverlay 圆样式 | 扩展 PointLayer | 扩展 Loca.PointLayer | 扩展 Dot |
-| 呼吸 / 波纹强调 | 按已核实原生覆盖物属性组合；否则缺口 | circle 样式动画组合 | CircleOverlay 组合 | 扩展 RippleLayer | 扩展 ScatterLayer | 扩展 Dot 动画 / Radiation |
-| 点聚合与展开 | @googlemaps/markerclusterer | GeoJSON source cluster | GeoJSONOverlay pointCluster | 扩展 ClusterLayer | AMap.MarkerCluster 插件 | TMap.MarkerCluster |
-| 连续热力 | 原生缺口；可评估第三方 HeatmapLayer | 原生 heatmap | 原生 HeatmapOverlay | 扩展 HeatmapLayer | 扩展 HeatMapLayer | 扩展 Heat |
-| 方格 / 蜂窝统计 | 预计算面 + Data | 预计算 fill | 预计算 GeoJSONOverlay 面 | 扩展 HeatGridLayer / HoneycombLayer | 扩展 GridLayer / HexagonLayer | 扩展 Grid / Hexagon |
-| 区域分级设色 | Data / DDS boundaries | 原生 fill + line | GeoJSONOverlay / PolygonOverlay | 原生多边形 / 扩展 PolygonLayer | 原生 Polygon / 扩展 PolygonLayer | MultiPolygon / 扩展 Area |
-| 真实路径线 | Polyline / Data | 原生 line | PolylineOverlay / GeoJSONOverlay | 原生折线 / 扩展 SimpleLineLayer | Polyline / 扩展 LineLayer | MultiPolyline / 扩展 Trail |
-| OD / 动态飞线 | 原生 Polyline + symbols 组合 | 原生 line 样式动画组合 | 原生 PulseLinkOverlay（快照） | 扩展 FlyLineLayer | LinkLayer / PulseLinkLayer | 扩展 Arc |
-| 有时间的轨迹回放 | 按时间更新原生标记/Polyline | 原生 source/line/marker 时间调度 | PointKeyFrameTrack / PolylineKeyFrameTrack | 对应轨迹层按时间契约核实 / 自行调度 | MoveAnimation / PulseLineLayer 仅作方向强调 | 扩展 Trail |
-| 指标柱 / 区域拉伸 | 原生缺口；可评估第三方指标拉伸 | 原生 fill-extrusion | PrismOverlay | 扩展 ShapeLayer | 扩展 PrismLayer / PolygonLayer | 扩展 Prism |
-| 3D 热力曲面 | 缺口：未核实专用官方层 | 缺口：heatmap 不提供曲面高度 | Heatmap3DOverlay（快照） | 扩展 HeatmapLayer height，验证版本 | 扩展 HeatMapLayer height | 扩展 Heat height |
-| 范围 / 辐射 / 围栏 | Circle / Polygon / 组合动画 | 预计算面 / 组合动画 | CircleOverlay / PolygonOverlay | 基础覆盖物 / RippleLayer | Circle / Polygon / Loca 组合 | Radiation / Wall / Area |
+| 数据表达 | Google | Mapbox | 百度 | 高德 | 腾讯 |
+|---|---|---|---|---|---|
+| 散点 / 数量气泡 | Data 点样式 / AdvancedMarker | 原生 circle | 扩展 PointLayer | 扩展 Loca.PointLayer | 扩展 Dot |
+| 呼吸 / 波纹强调 | 按已核实原生覆盖物属性组合；否则缺口 | circle 样式动画组合 | 扩展 RippleLayer | 扩展 ScatterLayer | 扩展 Dot 动画 / Radiation |
+| 点聚合与展开 | @googlemaps/markerclusterer | GeoJSON source cluster | 扩展 ClusterLayer | AMap.MarkerCluster 插件 | TMap.MarkerCluster |
+| 连续热力 | 原生缺口；可评估第三方 HeatmapLayer | 原生 heatmap | 扩展 HeatmapLayer | 扩展 HeatMapLayer | 扩展 Heat |
+| 方格 / 蜂窝统计 | 预计算面 + Data | 预计算 fill | 扩展 HeatGridLayer / HoneycombLayer | 扩展 GridLayer / HexagonLayer | 扩展 Grid / Hexagon |
+| 区域分级设色 | Data / DDS boundaries | 原生 fill + line | 原生多边形 / 扩展 PolygonLayer | 原生 Polygon / 扩展 PolygonLayer | MultiPolygon / 扩展 Area |
+| 真实路径线 | Polyline / Data | 原生 line | 原生折线 / 扩展 SimpleLineLayer | Polyline / 扩展 LineLayer | MultiPolyline / 扩展 Trail |
+| OD / 动态飞线 | 原生 Polyline + symbols 组合 | 原生 line 样式动画组合 | 扩展 FlyLineLayer | LinkLayer / PulseLinkLayer | 扩展 Arc |
+| 有时间的轨迹回放 | 按时间更新原生标记/Polyline | 原生 source/line/marker 时间调度 | 对应轨迹层按时间契约核实 / 自行调度 | MoveAnimation / PulseLineLayer 仅作方向强调 | 扩展 Trail |
+| 指标柱 / 区域拉伸 | 原生缺口；可评估第三方指标拉伸 | 原生 fill-extrusion | 扩展 ShapeLayer | 扩展 PrismLayer / PolygonLayer | 扩展 Prism |
+| 3D 热力曲面 | 缺口：未核实专用官方层 | 缺口：heatmap 不提供曲面高度 | 扩展 HeatmapLayer height，验证版本 | 扩展 HeatMapLayer height | 扩展 Heat height |
+| 范围 / 辐射 / 围栏 | Circle / Polygon / 组合动画 | 预计算面 / 组合动画 | 基础覆盖物 / RippleLayer | Circle / Polygon / Loca 组合 | Radiation / Wall / Area |
 
 矩阵中的接口依据链接及源码定位放在各平台文件中。不能仅凭本表推断字段同名、动画语义相同、地形遮挡相同或最大点数相同。
 

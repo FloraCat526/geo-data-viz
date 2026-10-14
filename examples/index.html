@@ -1,24 +1,27 @@
 <!doctype html>
-<html lang="zh-CN">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Geo Data Viz · 案例</title>
-<style>
-:root{color-scheme:dark;font:16px/1.7 system-ui,-apple-system,"PingFang SC",sans-serif;background:#0b1420;color:#e8eff5}*{box-sizing:border-box}body{margin:0}main{max-width:1160px;margin:auto;padding:64px 28px}a{color:#9be8d0}nav{display:flex;gap:24px;font-size:14px}.eyebrow{margin-top:56px;letter-spacing:3px;color:#9be8d0;font-size:12px}h1{font-size:clamp(32px,6vw,56px);line-height:1.2;font-weight:600;letter-spacing:-1px;margin:20px 0}h2{font-size:24px;margin-top:60px}p{color:#aabccc;max-width:780px}.cases,.gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}.card,figure{margin:0;border:1px solid #2b3d4c;border-radius:12px;background:#111f2d;overflow:hidden}.card{padding:28px}.card h3{font-size:23px;margin:0 0 14px}.card p{font-size:14px;min-height:72px}.card a{display:inline-block;margin-top:8px}.tag{font-size:12px;color:#b8cbd9}figure img{width:100%;height:280px;object-fit:cover;object-position:center;display:block;background:#07111c}figcaption{padding:14px 18px;font-size:14px}footer{border-top:1px solid #2b3d4c;margin-top:48px;padding-top:20px;font-size:13px;color:#aabccc}a:focus-visible{outline:2px solid #9be8d0;outline-offset:4px}@media(max-width:700px){main{padding:32px 18px}.cases,.gallery{grid-template-columns:1fr}figure img{height:auto}.card p{min-height:0}}
-</style></head>
-<body><main><nav><a href="https://github.com/FloraCat526/geo-data-viz">GitHub</a><a href="https://github.com/FloraCat526/geo-data-viz/blob/main/SKILL.md">使用 Skill ↗</a></nav>
-<div class="eyebrow">GEO DATA VIZ / EXAMPLES</div><h1>让地理数据<br>成为可以探索的地图。</h1><p>由 Geo Data Viz Skill 生成的地图作品与演示。案例源码不含地图凭证；真实底图需要使用你自己的浏览器 Key 和相应权限。</p>
-<section aria-labelledby="live-title"><h2 id="live-title">可运行案例</h2><div class="cases">
-<article class="card"><span class="tag">GEONAMES · MAPBOX</span><h3>意大利城市星图</h3><p>945 个城镇的人口气泡图，支持大区筛选、城市搜索、排名与详情。数据有公开来源与许可，人口年份和统计范围不统一。</p><a href="./italy-atlas/">打开城市星图 →</a></article>
-<article class="card"><span class="tag">SYNTHETIC DATA · CANVAS</span><h3>多地图演示工作台</h3><p>使用合成数据体验气泡、呼吸点、筛选和地图接入。默认坐标网格仅用于预览；数据层由独立 Canvas 绘制，不代表各家原生图层实现。</p><a href="./playground/">打开演示工作台 →</a></article>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Geo Data Viz · 示例中心</title><link rel="stylesheet" href="gallery.css"></head>
+<body><header><a class="brand" href="index.html"><img class="brand-logo" src="assets/geo-data-viz.png" width="44" height="44" alt=""><span class="brand-name">Geo Data Viz</span><span class="brand-divider" aria-hidden="true">|</span><span class="brand-tagline">From Data To Map Examples</span></a><nav><span class="install-hint">在 Codex 等 Agent 中安装 geo-data-viz skill，上传数据描述你想观察什么。</span><a href="https://github.com/FloraCat526/geo-data-viz">GitHub ↗</a></nav></header>
+<main>
+<section class="workspace" aria-label="地图示例"><aside aria-label="示例导航"><div class="cases">
+<section class="case-group is-open"><button class="case-group-toggle" type="button" aria-expanded="true" aria-controls="map-cases"><span>地图数据可视化</span></button><div class="case-items" id="map-cases">
+<a class="case" href="maps/point-glow.html" target="map-preview" data-title="新加坡发光散点" data-summary="2,605 个位置 · 单个晚间出租车快照"><span class="case-cover"><img class="case-thumbnail" src="assets/thumbnails/point-glow.jpg" width="800" height="450" alt="" loading="lazy" decoding="async"></span><strong>新加坡发光散点</strong></a>
+<a class="case" href="maps/housing.html" target="map-preview" data-title="私人住宅的空间分布" data-summary="1,988 个网格 · 458,975 套住宅 · Q4 2022" aria-current="true"><span class="case-cover"><img class="case-thumbnail" src="assets/thumbnails/housing.jpg" width="800" height="450" alt="" loading="lazy" decoding="async"></span><strong>新加坡私人住宅</strong></a>
+<a class="case" href="maps/flights.html" target="map-preview" data-title="新加坡历史航空飞线" data-summary="125 条历史连接 · 2014 年航线数据"><span class="case-cover"><img class="case-thumbnail" src="assets/thumbnails/flights.jpg" width="800" height="450" alt="" loading="lazy" decoding="async"></span><strong>新加坡历史航空飞线</strong></a>
+<a class="case" href="maps/highways.html" target="map-preview" data-title="美国公路历史事故" data-summary="20,592 个道路要素 · 1990—2015 分年数据"><span class="case-cover"><img class="case-thumbnail" src="assets/thumbnails/highways.jpg" width="800" height="450" alt="" loading="lazy" decoding="async"></span><strong>美国公路历史事故</strong></a>
+<a class="case" href="maps/quakes.html" target="map-preview" data-title="意大利及周边地震事件" data-summary="190 次地震 · 深色地图 / 卫星图"><span class="case-cover"><img class="case-thumbnail" src="assets/thumbnails/quakes.jpg" width="800" height="450" alt="" loading="lazy" decoding="async"></span><strong>意大利及周边地震事件</strong></a>
+<a class="case" href="maps/taxis.html" target="map-preview" data-title="新加坡出租车快照" data-summary="早 / 中 / 晚 · 分别展示可用出租车"><span class="case-cover"><img class="case-thumbnail" src="assets/thumbnails/taxis.jpg" width="800" height="450" alt="" loading="lazy" decoding="async"></span><strong>新加坡出租车快照</strong></a>
 </div></section>
-<section aria-labelledby="gallery-title"><h2 id="gallery-title">效果截图</h2><p>以下为已有作品的静态截图，不代表每个案例均附有可运行源码。</p><div class="gallery">
-<figure><img src="../assets/screenshots/italy-city-population.png" alt="意大利城镇人口星光气泡地图" loading="lazy"><figcaption>意大利城市人口 · 星光气泡</figcaption></figure>
-<figure><img src="../assets/screenshots/singapore-coastal-routes.png" alt="新加坡滨海连道的彩色路线地图" loading="lazy"><figcaption>新加坡滨海连道 · 霓虹路线</figcaption></figure>
-<figure><img src="../assets/screenshots/california-ev-charging.png" alt="加州充电站图标点地图" loading="lazy"><figcaption>加州充电站 · 图标点</figcaption></figure>
-<figure><img src="../assets/screenshots/singapore-flight-routes.png" alt="从新加坡出发的历史航线地图" loading="lazy"><figcaption>新加坡历史航线 · 飞线</figcaption></figure>
-<figure><img src="../assets/screenshots/singapore-parking-hexagons.png" alt="新加坡停车分布蜂窝地图" loading="lazy"><figcaption>新加坡停车分布 · 蜂窝图</figcaption></figure>
-<figure><img src="../assets/screenshots/italy-earthquake-ripples.png" alt="意大利地震位置的波纹地图" loading="lazy"><figcaption>意大利地震 · 波纹图</figcaption></figure>
-<figure><img src="../assets/screenshots/singapore-housing-3d-heatmap.png" alt="新加坡住宅的三维热力地图" loading="lazy"><figcaption>新加坡住宅 · 3D 热力图</figcaption></figure>
-<figure><img src="../assets/screenshots/singapore-business-clusters.png" alt="新加坡商户位置的点聚合地图" loading="lazy"><figcaption>新加坡商户 · 点聚合</figcaption></figure>
+<section class="case-group"><button class="case-group-toggle" type="button" aria-expanded="false" aria-controls="globe-cases"><span>地球模式可视化</span></button><div class="case-items" id="globe-cases" hidden>
+<a class="case" href="maps/globe-flights.html" target="map-preview" data-title="全球航空连接" data-summary="125 条历史航线 · 球面飞线"><span class="case-cover"><img class="case-thumbnail" src="assets/thumbnails/globe-flights.jpg" width="800" height="450" alt="" loading="lazy" decoding="async"></span><strong>球面飞线</strong></a>
+<a class="case" href="maps/globe-countries.html" target="map-preview" data-title="全球人口分布" data-summary="177 个国家或地区 · 2024 年总人口"><span class="case-cover"><img class="case-thumbnail" src="assets/thumbnails/globe-countries.jpg" width="800" height="450" alt="" loading="lazy" decoding="async"></span><strong>地球区域设色</strong></a>
+<a class="case" href="maps/globe-earthquakes.html" target="map-preview" data-title="全球地震事件" data-summary="591 次 M 4.5+ 地震 · 震级柱"><span class="case-cover"><img class="case-thumbnail" src="assets/thumbnails/globe-earthquakes.jpg" width="800" height="450" alt="" loading="lazy" decoding="async"></span><strong>球面棱柱</strong></a>
 </div></section>
-<footer>城市星图数据：<a href="https://www.geonames.org/">GeoNames</a> · <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a> · 筛选及 GeoJSON 转换。地图 SDK、底图及各服务适用各自条款。</footer>
-</main></body></html>
+<section class="case-group"><button class="case-group-toggle" type="button" aria-expanded="false" aria-controls="story-cases"><span>场景叙事可视化</span></button><div class="case-items" id="story-cases" hidden>
+<a class="case" href="maps/mountain-flyover.html" target="map-preview" data-title="阿尔卑斯 · 山地飞越" data-summary="24 秒 · 4 个章节 · 真实影像与高程"><span class="case-cover"><img class="case-thumbnail" src="assets/thumbnails/mountain-flyover.jpg" width="800" height="450" alt="" loading="lazy" decoding="async"></span><strong>阿尔卑斯 · 山地飞越</strong></a>
+<a class="case" href="maps/travel-itinerary.html" target="map-preview" data-title="新加坡两日漫游" data-summary="2 天 6 站 · 示例行程"><span class="case-cover"><img class="case-thumbnail" src="assets/thumbnails/travel-itinerary.jpg" width="800" height="450" alt="" loading="lazy" decoding="async"></span><strong>新加坡两日漫游</strong></a>
+<a class="case" href="maps/story-timeline.html" target="map-preview" data-title="沿着海峡，写下六个章节" data-summary="6 个地点 · 虚构故事"><span class="case-cover"><img class="case-thumbnail" src="assets/thumbnails/story-timeline.jpg" width="800" height="450" alt="" loading="lazy" decoding="async"></span><strong>沿着海峡，写下六个章节</strong></a>
+</div></section>
+</div></aside>
+<div class="preview"><div class="preview-bar"><div><h2 id="preview-title">私人住宅的空间分布</h2><p id="preview-summary">1,988 个网格 · 458,975 套住宅 · Q4 2022</p></div><a id="open-map" href="maps/housing.html" target="_blank" rel="noopener">单独打开 ↗</a></div><iframe name="map-preview" title="私人住宅的空间分布交互地图" src="maps/housing.html" allow="fullscreen"></iframe></div></section>
+</main>
+<footer><span>Geo Data Viz · 可独立运行的 HTML 示例</span><span>一份数据，看见空间里的故事</span></footer><script src="gallery.js"></script></body></html>

@@ -1,0 +1,74 @@
+{
+  "data": [
+    {
+      "file": "data/accidents.csv",
+      "bytes": 546545,
+      "sha256": "d18db4eb590ff9bb837996c985a15ca6dc34c61c20eca8e5aaccddb32035d6f2"
+    },
+    {
+      "file": "data/accidents.json",
+      "bytes": 1250768,
+      "sha256": "5ee556e305d8929de6e084da26a6c29cc0deebf39ad513a4efbcfb193f98ed9b"
+    },
+    {
+      "file": "data/flight-source-routes.csv",
+      "bytes": 14570,
+      "sha256": "53855a10dc81b13592eecaa10a8fba7ef7068cac5654abe284d508736464fbc7"
+    },
+    {
+      "file": "data/flights.json",
+      "bytes": 50988,
+      "sha256": "eab7f63ab9b47b084ff05dc783be90de16e4ce6c78839e89347b5893ed43eb8e"
+    },
+    {
+      "file": "data/globe-countries.geojson",
+      "bytes": 264355,
+      "sha256": "cc511bd959d465f12927e5b43e22e68e42f9e46520e71812489bea1487ba8b04"
+    },
+    {
+      "file": "data/globe-quakes.geojson",
+      "bytes": 145581,
+      "sha256": "28a4a4de015d54e3b7b5ecd77d629dbc6548b4509183efb02d3ffa2706a2837f"
+    },
+    {
+      "file": "data/highways.json",
+      "bytes": 12007623,
+      "sha256": "7cc7c9e8c8ece369c0fc6360a9120491c8167ea41cec2059c8867154756daa71"
+    },
+    {
+      "file": "data/housing.geojson",
+      "bytes": 886951,
+      "sha256": "09bc0800bebd43e809ba413a3157ee77e7663ad2accbfdd1a36520293126de12"
+    },
+    {
+      "file": "data/mountain-landmarks.geojson",
+      "bytes": 3172,
+      "sha256": "804fa757be980115c4efef4310c1704c454a365299ddb2ccdc0509279a675834"
+    },
+    {
+      "file": "data/quakes.json",
+      "bytes": 50398,
+      "sha256": "0c355cf81a8152a7c919e5dc0d292d27ab54ee2339fd88ade2d0217811d0131f"
+    },
+    {
+      "file": "data/story-timeline.json",
+      "bytes": 2212,
+      "sha256": "838ecc7dc60a035eac177898fd86f16d456abb2128b9858ac78f169e9178eb80"
+    },
+    {
+      "file": "data/taxis.json",
+      "bytes": 869409,
+      "sha256": "407daaca737f928fe69d0ddcc19a186272ade96c5e2062f68616bedb464e1f1a"
+    },
+    {
+      "file": "data/travel-itinerary-stops.csv",
+      "bytes": 790,
+      "sha256": "0b4bd1234e3ffabc4a23aa4015264ce1bac897371bc177c533ac994fb2a46a79"
+    },
+    {
+      "file": "data/travel-itinerary.json",
+      "bytes": 2185,
+      "sha256": "a8b2b1584d14d5ead21059eb0feb144dc3b1c6fb6b165b3610825ae2e70d92af"
+    }
+  ]
+}

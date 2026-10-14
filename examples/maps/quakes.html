@@ -1,0 +1,24 @@
+<!doctype html><!--
+MIT License
+
+Copyright (c) 2026 FloraCat526
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+--><html data-demo-kind="extended" lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>意大利及周边地震事件</title><link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css"><link rel="stylesheet" href="../assets/extended.css"><script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script><link rel="stylesheet" href="../assets/demo-panels.css"></head><body><div id="map"></div><section class="panel"><button id="collapse">收起</button><h1>意大利及周边地震事件</h1><div class="body"><p>190 次地震 · 2025 年快照</p><div id="count"></div><div class="controls" id="modes"></div><button id="pause">暂停动画</button><div id="legend">颜色表示源震级；不同震级类型未统一。波纹仅为强调，不代表影响范围。</div><p id="status" role="status">正在加载地图…</p><div id="detail"></div><div class="foot">INGV / ISIDe · CC BY 4.0<br><a href="../SOURCES.md">来源与口径</a> · <a href="../data/quakes.json" download>下载数据</a></div></div></section><script id="config" type="application/json">{"id": "quakes", "modes": ["\u547c\u5438\u70b9", "\u4f4d\u7f6e\u70b9"], "center": [13, 41], "zoom": 5.5, "bounds": [[6, 33.5], [20, 47.5]], "basemaps": {"imagery": {"tiles": ["https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/2018-06-01/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg"], "tileSize": 256, "minzoom": 1, "maxzoom": 8, "attribution": "<a href=\"https://earthdata.nasa.gov/gibs\">NASA GIBS / MODIS Terra \u00b7 2018-06-01</a>"}}}</script><script type="module" src="../assets/extended.js"></script></body></html>

@@ -1,6 +1,6 @@
 // Legacy north-up 2D loading/projection adapter retained for existing consumers.
 // Not a visualization renderer. Prefer provider-native layers/official extensions; verified capability gaps may use fallback rendering.
-import { CRS, validateCoordinate } from './coords.mjs';
+import { validateCoordinate } from './coords.mjs';
 
 // SDK globals live for the page lifetime. Keys are held in memory only and never logged.
 const sdkStates = new Map();
@@ -9,14 +9,10 @@ const SDK_TIMEOUT = 25000;
 const MAP_TIMEOUT = 20000;
 let serial = 0;
 class ProviderError extends Error {}
-export const PROVIDERS = Object.freeze(['google', 'mapbox', 'maptec', 'baidu', 'amap', 'tencent']);
+export const PROVIDERS = Object.freeze(['google', 'mapbox', 'baidu', 'amap', 'tencent']);
 
 export function getProviderCrs(name, config = {}) {
   if (!PROVIDERS.includes(name)) throw new ProviderError('未知地图供应商。');
-  if (name === 'maptec') {
-    if (!CRS.includes(config.dataCrs)) throw new ProviderError('Maptec 需按实际 SDK / 数据契约明确选择底图坐标系。');
-    return config.dataCrs;
-  }
   return ({ google: 'wgs84', mapbox: 'wgs84', baidu: 'bd09', amap: 'gcj02', tencent: 'gcj02' })[name];
 }
 
@@ -183,19 +179,6 @@ async function mapbox(life, host, config, camera) {
   return glApi(life);
 }
 
-async function maptec(life, host, config, camera) {
-  if (!config.sdkUrl) throw new ProviderError('请提供你获准使用的 Maptec SDK URL；此模板不内置私有或测试环境地址。');
-  await Promise.all([
-    loadSdk('maptec', () => globalThis.Maptec?.Map, config.sdkUrl, config.key),
-    loadCss(config.cssUrl),
-  ]);
-  Maptec.apiKey = config.key;
-  const map = new Maptec.Map({ container: host, style: config.style || 'dark', ...camera, pitch: 0, bearing: 0, maxPitch: 0, dragRotate: false, renderWorldCopies: false });
-  life.setMap(map);
-  await ready(life, 'load', { check: () => map.loaded?.() === true, errorEvent: 'error' });
-  return glApi(life, false);
-}
-
 const GOOGLE_DARK = [
   { elementType: 'geometry', stylers: [{ color: '#15263b' }] },
   { elementType: 'labels.text.fill', stylers: [{ color: '#7c9ab7' }] },
@@ -304,7 +287,7 @@ export async function createProvider(name, element, config = {}, camera = {}) {
   element.appendChild(host);
   const life = lifecycle(host, dataCrs);
   try {
-    const api = await ({ google, mapbox, maptec, baidu, amap, tencent })[name](life, host, config, view(camera));
+    const api = await ({ google, mapbox, baidu, amap, tencent })[name](life, host, config, view(camera));
     addResize(life, host);
     return { ...api, dataCrs, onChange: life.onChange, destroy: life.destroy };
   } catch (error) {

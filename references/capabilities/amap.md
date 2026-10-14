@@ -14,7 +14,7 @@
 | 线统计 / 真实路径 | 扩展 `LineLayer`；原生 AMap.Polyline | LineString，线宽与颜色按业务绑定 | 路径应已存在，不能用演示曲线假装路网 |
 | OD 高亮弧线 / 连接 | 扩展 `LinkLayer` | OD 转成适配的线几何，线宽/高度/颜色 | 不把标量 count 当路径；弧高一般为装饰 |
 | 动态轨迹方向强调 | 扩展 `PulseLineLayer` | 有序线几何 + 脉冲样式 | 脉冲匀速动画不是按真实采样时间回放；真实回放用业务时钟或 MoveAnimation |
-| 动态 OD / 飞线 | 扩展 `PulseLinkLayer` | 两端关系 + 流量，保留方向 | 与 Maptec PulseLinkOverlay 名称/数据契约不同；无动画时退为 Link/Line |
+| 动态 OD / 飞线 | 扩展 `PulseLinkLayer` | 两端关系 + 流量，保留方向 | 按当前 Loca 数据契约生成；无动画时退为 Link/Line |
 | 二维 / 3D 热力 | 扩展 `HeatMapLayer` | value、radius、min/max、gradient；height 控制曲面表达 | 类名是 Heat**Map**Layer；二维时明确 height；数量热力不自动适合比例/温度 |
 | 网格 / 蜂窝聚合 | 扩展 `GridLayer` / `HexagonLayer` | radius、unit、value 回调、颜色及 height | 聚合回调需确认 feat 内容；严格跨图比较先统一格网，不能各自默认重聚合 |
 | 区域设色 / 面拉伸 | 扩展 `PolygonLayer`；原生 AMap.Polygon | Polygon + 指标、topColor、height | 真实区域边界与数据关联；统计高度需解释单位换算 |
@@ -46,3 +46,6 @@
 - **`complete` 不代表底图可用**：2026-09-13 使用用户提供的 Key / securityJsCode，本地 JSAPI 2.0 的北京底图实际显示道路与标注；新加坡未开 `showOversea` 时仅显示网格，但仍触发 `complete`，且 89 条原生 Polyline 可画。开启后 SDK 返回 `FlyDataAuthTask error: INSUFFICIENT_PRIVILEGES`，因此这组 Key 未通过海外底图验收。不能把“覆盖物可见 + complete”记成地图成功。
 - 此情况下保持已有供应商的可用结果，报告海外能力未获准；不要把新加坡数据移动到中国、伪造背景、或把空网格当成海外地图。Key 获得权限后，再验收海外真实底图和 A→B→A 状态保留。
 - 本次只确认国内底图可用与海外权限不足；没有据此验证 Loca 热力/面层、国内业务坐标转换，或多供应商切换。安全配置只保存在项目外的本地开发配置中。
+
+
+基础点线面与计数热力可使用 [官方扩展配方](../official-recipes.md)，包含坐标契约、固定色域、筛选和销毁；具体 SDK 组合仍按本页验收。

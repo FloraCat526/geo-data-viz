@@ -1,0 +1,90 @@
+{
+  "metadata": {
+    "dataCrs": "wgs84"
+  },
+  "title": "新加坡两日漫游 · 示例行程",
+  "days": [
+    {
+      "id": "day-1",
+      "label": "第 1 天",
+      "color": "#37699c",
+      "stops": [
+        {
+          "id": "botanic-gardens",
+          "name": "新加坡植物园",
+          "coordinates": [
+            103.8159,
+            1.3138
+          ],
+          "time": "09:00",
+          "tag": "园林散步",
+          "summary": "从绿地开始一天的城市漫游。"
+        },
+        {
+          "id": "fort-canning",
+          "name": "福康宁公园",
+          "coordinates": [
+            103.8454,
+            1.2942
+          ],
+          "time": "13:30",
+          "tag": "城市绿地",
+          "summary": "在城市中心安排一段步行与休息。"
+        },
+        {
+          "id": "national-gallery",
+          "name": "新加坡国家美术馆",
+          "coordinates": [
+            103.8511,
+            1.2903
+          ],
+          "time": "16:00",
+          "tag": "文化场馆",
+          "summary": "以城市文化场馆结束第一天。"
+        }
+      ],
+      "date": "2026-10-12"
+    },
+    {
+      "id": "day-2",
+      "label": "第 2 天",
+      "color": "#c57c48",
+      "stops": [
+        {
+          "id": "merlion-park",
+          "name": "鱼尾狮公园",
+          "coordinates": [
+            103.8545,
+            1.2867
+          ],
+          "time": "09:30",
+          "tag": "海湾视角",
+          "summary": "从滨水空间开始第二天。"
+        },
+        {
+          "id": "artsci-museum",
+          "name": "艺术科学博物馆",
+          "coordinates": [
+            103.8593,
+            1.2863
+          ],
+          "time": "13:00",
+          "tag": "展览场馆",
+          "summary": "将室内参观安排在午后。"
+        },
+        {
+          "id": "gardens-by-the-bay",
+          "name": "滨海湾花园",
+          "coordinates": [
+            103.8646,
+            1.2816
+          ],
+          "time": "17:00",
+          "tag": "夜景收尾",
+          "summary": "以海湾周边的开放空间收尾。"
+        }
+      ],
+      "date": "2026-10-13"
+    }
+  ]
+}

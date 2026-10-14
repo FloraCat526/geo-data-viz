@@ -1,0 +1,78 @@
+{
+  "title": "新加坡私人住宅",
+  "description": "Q4 2022 私人住宅快照。250 m 等面积统计网格，不代表建筑轮廓；不涵盖全部 HDB 公屋。类别筛选按网格内住宅套数最多的类型分组，仍展示该网格全部住宅套数。",
+  "dataDescription": "Q4 2022 私人住宅快照。250 m 等面积统计网格，不代表建筑轮廓；不涵盖全部 HDB 公屋。类别筛选按网格内住宅套数最多的类型分组，仍展示该网格全部住宅套数。",
+  "sourceLabel": "来源：URA No of Dwelling Units / data.gov.sg；访问 2026-09-11；Singapore Open Data Licence 1.0（https://data.gov.sg/open-data-licence）；不代表 URA 背书。",
+  "effect": "fill",
+  "colorBy": "value",
+  "colorScale": {
+    "type": "threshold",
+    "breaks": [
+      50,
+      150,
+      300,
+      600,
+      1000
+    ],
+    "colors": [
+      "#164e63",
+      "#0891b2",
+      "#22d3ee",
+      "#a3e635",
+      "#fbbf24",
+      "#f97316"
+    ]
+  },
+  "unit": "套",
+  "aggregation": "sum",
+  "theme": "dark",
+  "layout": "explore",
+  "detailFields": [
+    {
+      "field": "records",
+      "label": "原始位置记录数"
+    },
+    {
+      "field": "landed",
+      "label": "有地住宅（套）"
+    },
+    {
+      "field": "non_landed",
+      "label": "非有地住宅（套）"
+    },
+    {
+      "field": "ec",
+      "label": "执行共管公寓（套）"
+    }
+  ],
+  "alternatives": [
+    {
+      "effect": "extrusion",
+      "colorBy": "value",
+      "colorScale": {
+        "type": "threshold",
+        "breaks": [
+          50,
+          150,
+          300,
+          600,
+          1000
+        ],
+        "colors": [
+          "#164e63",
+          "#0891b2",
+          "#22d3ee",
+          "#a3e635",
+          "#fbbf24",
+          "#f97316"
+        ]
+      },
+      "heightScale": 1.2,
+      "description": "Q4 2022 私人住宅快照。250 m 等面积统计网格，不代表建筑轮廓；不涵盖全部 HDB 公屋。类别筛选按网格内住宅套数最多的类型分组，仍展示该网格全部住宅套数。 3D 显示高度按 1 套 = 1.2 米映射，不是实际楼高。"
+    }
+  ],
+  "subtitle": "2022 Q4 · 250 米网格",
+  "recordLabel": "住宅网格",
+  "metricLabel": "住宅",
+  "showRecords": false
+}

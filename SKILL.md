@@ -1,58 +1,109 @@
 ---
 name: geo-data-viz
-description: Analyze geographic CSV, Excel, JSON, or GeoJSON attached in an AI conversation, choose suitable visualizations, and generate runnable HTML maps using the selected provider's native layers or official extensions first, with third-party or custom rendering when provider capabilities are insufficient. Support provider switching when requested.
+description: Analyze geographic CSV, Excel, JSON, or GeoJSON and generate runnable HTML maps, interactive globes, or geographic narratives. Use for geographic data visualization and user-requested map storytelling or video. Default to MapLibre + OpenFreeMap; honor explicit providers and authorized imagery or terrain resources.
 ---
 
-# 地理数据可视化 Skill
+# 地理数据可视化
 
-接收用户在对话中上传的数据、选择的地图平台及提供的 Key，由 Agent 分析数据并为这次任务生成可运行的地图作品。每份数据的指标、视觉效果和页面布局按实际内容决定。
+在 Agent 对话中分析用户附件、选择合适的表达并交付这份数据的 HTML 地图。用户要求场景叙事或视频时，可编排章节、镜头与路线并输出 HTML 或 Remotion 视频工程。默认生成具体作品；只有用户要求时才开发上传平台或加入多图商切换。
 
-典型请求：
+能力只按以下三类组织。平面效果都作为平等、可独立选择的可视化组件；Agent 按问题和字段选组件，底层绘制方式只是实现细节。示例中的停车方格和图标点是按数据制作的页面效果，不等于另有通用组件 API。
 
-> 分析附件门店数据，用订单数生成类似气泡图和呼吸点的效果，支持 Maptec 与高德切换；使用我提供的两家 Key。
+| 类别 | 当前可复用能力 |
+| --- | --- |
+| 可视化组件 | 散点、分类点、数值着色点、气泡、点聚合、热力、线、区域设色、3D 拉伸，以及飞线、呼吸点、雷达扫描、平面／3D 蜂窝；可配置矢量、影像或地形底图 |
+| 场景叙事组件 | 旅游规划、故事时间轴、场景镜头叙事；章节、镜头、路线揭示、地点讲解、图片、字幕与已有旁白；可选静态地图、MapTiler、Cesium 或 Remotion 视频输出 |
+| 地球模式组件 | 球面飞线、全球区域设色、事件指标柱 |
 
-本 Skill 是独立能力包，直接在 Agent 对话中完成分析与 HTML 交付。
+可视化的数据仅来自用户在本任务提供的文件或明确提供的内容。Skill 不提供算路、地理编码或外部数据补全服务；地图 SDK 与底图资源的加载不等于补充用户数据。缺少坐标、路径几何或区域边界时，先做现有数据能够支持的展示，并说明缺项；不能自动请求第三方服务生成这些数据。
 
-执行结果是这份数据的地图作品与简要分析。上传、字段识别、平台选择和必要澄清在 AI 对话里完成。不要把任务替换成开发通用可视化平台，也不要要求用户先进入固定工作台重新上传和配置。用户另有产品开发要求时，按其明确范围处理。
+## 运行条件
 
-## 1. 分析上传数据
+- 数据分析和 HTML 生成需要 **Python 3.10+**。CSV、TSV、JSON、GeoJSON 使用标准库；Excel 仅支持 XLSX/XLSM，需要 `requirements-excel.txt` 中的 openpyxl。旧 XLS 先转换。
+- 生成的 HTML 需要支持 WebGL 的浏览器及网络，以加载 SDK、字体和底图。默认 MapLibre 可视化无需安装 Node.js 或申请 Key；飞线和显式启用的散点加法叠加另从固定 CDN 加载 deck.gl（加法散点需 WebGL2）。地球模式使用独立 Globe.GL 与地球纹理，也需联网。
+- 影像和地形是底图选项：只有任务需要时加载用户提供或已授权的影像瓦片、DEM 与对应 Key；默认 OpenFreeMap 矢量样式不自带卫星影像或高程。视频导出另需可选 Node.js/Remotion 工程与 Chromium，按[视频输出](references/video-export.md)准备，普通 HTML 不依赖它们。
+- `SKILL_DIR` 指当前已安装 Skill 的实际路径，`WORK` 指本次任务工作目录。路径含空格时加引号。不要将用户数据或作品写回 Skill 安装目录。
 
-- 定位本轮附件、当前 Skill 的实际路径和可用 Python；路径含空格时引用完整路径。找到输入后先运行 `scripts/profile_geo.py INPUT --out-dir WORK/profile`。CSV/TSV、JSON、GeoJSON 使用标准库；Excel 需要可用的 openpyxl。完整结果见 [数据契约](references/data-contract.md)。特殊空间格式或超大数据按需选择 GeoPandas、DuckDB 等，先核实环境。
-- 识别点、线、面、轨迹或 OD 数据；识别经纬度/地址、规模指标、类别、时间与实体 ID。检查缺失、异常范围、重复、几何有效性和时间粒度。只读取必要样例与分析结果，不把完整数据倒进上下文。
-- 按用户目标、字段名称、单位和记录粒度确定角色。数量、比例、变化量使用不同映射；编号、邮编、年份、经纬度不能自动当规模指标。重复坐标不等于重复记录；缺失不填零。
-- 数据和目标明确时直接绑定并推进，不要求用户先选字段或图表。只询问会影响结果的关键缺项（如源坐标系、指标含义、Key）；已有上下文能确定的内容不再问，同时继续不依赖答案的工作。涉及 OD、轨迹、多表或区域关联时按需读 [数据转换配方](references/transforms.md)。选定字段后复跑脚本，如：
+## 1. 识别输入与分析目标
+
+定位附件并读取必要样例，判断几何、记录粒度、指标单位、类别、时间及坐标来源。数据和目标明确时直接推进；只询问会影响结果的关键缺项（坐标系、指标含义或指定服务的凭据），继续不依赖答案的工作。
+
+**先区分原始数据和已规范化数据：**
+
+- 原始 CSV/Excel/JSON/GeoJSON：运行分析脚本，读取摘要，再按业务含义显式绑定指标；数值候选不等于已选择指标。
+- 已含稳定字符串 ID、`metadata.dataCrs` 和 `properties.__viz` 的 FeatureCollection：按 [数据契约](references/data-contract.md#reuse-normalized) 检查现有绑定是否符合本次目标。符合时直接交给生成器校验并复用，不重复运行 profiler。需要换指标时从原始字段显式重新绑定，保留原文件。
+- 只有地址、OD 表、轨迹、多表或区域编码：按需读 [数据转换](references/transforms.md)，仅对用户提供的数据完成必要关联后再渲染；不编造或从外部补充坐标、路线、边界。
+
+原始输入示例：
 
 ```bash
-python3 "SKILL_DIR/scripts/profile_geo.py" "locations.csv" --out-dir work/profile \
+python3 "SKILL_DIR/scripts/profile_geo.py" "locations.csv" --out-dir "WORK/profile"
+python3 "SKILL_DIR/scripts/profile_geo.py" "locations.csv" --out-dir "WORK/profile-bound" \
   --crs wgs84 --lng-field longitude --lat-field latitude \
   --value-field visits --label-field name --category-field type
 ```
 
-`SKILL_DIR` 替换为当前 Skill 的实际路径。
+检查 `status`、有效/无效记录和警告，不以退出码代替数据质量判断。CRS 来自源声明或可靠依据，不能从数值范围猜测；`--crs` 不执行转换。详细解析参数、缺失值和 CRS 冲突处理见数据契约。
 
-## 2. 确定地图与效果
+## 2. 选择图商和可视化
 
-- 采用用户已选的图商；未指定时优先沿用本任务已授权且适用的配置，没有既定配置时建议 Mapbox 并继续生成，接入只收集缺失 Key 等必要配置。若区域或网络限制影响适用性，说明依据并选择可行路线。单图商保持简洁；只有用户要求时才加入多图商切换。
-- Key 使用用户明确提供的值或明确授权读取的项目配置。缺少 Key、Maptec 接入信息或高德安全配置时，在对话中一次说明所需项；先完成数据分析和页面代码，待接入后继续验收，不将无底图网格当作交付结果。
-- 按 [数据到效果的匹配规则](references/selection.md) 判断几何、记录粒度、指标单位/分母、时间与空间分布，先淘汰数据条件不成立的效果。再查 [六家能力索引](references/capabilities/index.md)，**阅读用户所选平台的能力文档**，将候选映射到具体类/图层、额外依赖、版本条件与降级路线，不仅停留在效果名称。
-- 脚本的 recommendations 是未排序的条件候选；eligible 只表示数据结构条件成立，needs-transform 需满足列出的条件，blocked 不可直接使用。由 AI 按用户目标判断，不能照抄第一项。推荐 1 个主方案及最多 2 个有区别的备选，说明它们如何回答用户问题。遵循 [视觉映射](references/visualization.md)；气泡、热力、网格、轨迹与3D高度不能因名字相近就互换。优先选择当前图商原生图层或官方可视化扩展，能力不足时按渲染归属规则补充；Demo 名称不是构造器，源码已有不等于目标部署已发布。
-- 在任务工作目录保留简短 `viz-plan.json` 或等价选型说明：数据依据、指标/聚合/固定域、所选 API 与证据、SDK/扩展版本、逐平台路线和待验证项，不包含 Key。每条路线记录 rendererOwner（provider-native / provider-official-extension / third-party / custom）、具体图层类或 type、挂载 API 和图层 ID；采用补充渲染时记录 fallbackReason、能力缺口依据、库/版本与限制，不冒充原生能力，也不静默换图商。跨平台严格比较时统一计算聚合/密度结果；各家默认热力或 cluster 不能直接当作数值等价。具体结构见匹配规则。
-- 以用户给的 Demo 作为视觉参考。可采用暗色底图、发光核心、呼吸光晕、连续/分级色阶，但颜色、面积、速度与业务含义要对应；不能沿用其他数据的阈值。样式和布局围绕本次数据设计。
+平面地图的图商按以下顺序确定：用户明确选择 → 本任务唯一适用的已授权配置 → **MapLibre + OpenFreeMap**。用户明确要全球球面视角、未指定图商时，可按[地球模式](references/globe-effects.md)使用免 Key 的独立 Globe.GL 渲染器；不要将它标为 MapLibre 图层。明确选择商业图商却缺凭据时先完成分析及页面，保留所选服务，不静默换图商。凭据仅从本任务明确授权的值、配置或环境变量获取，不扫描其他项目或历史配置。
 
-## 3. 生成这份数据的地图作品
+1. 阅读 [分析目标 → 字段 → 聚合 → 组件](references/selection.md#2-分析目标--字段--聚合--组件)，按用户问题淘汰不适用方案。分析脚本的 recommendations 是未排序的结构候选，不自动选第一项。
+2. 已指定图商时阅读[能力索引](references/capabilities/index.md)和该图商文档，落实到具体 API、版本和依赖。优先原生图层或官方扩展；确认能力缺口后才用第三方补充，规则见[渲染归属](references/provider-rendering.md)。未指定图商且选择地球模式时直接读[地球组件](references/globe-effects.md)，无需虚构 MapLibre 底图。
+3. 采用一个主方案，必要时提供最多两个有不同分析价值的备选。指标、聚合、颜色、面积和高度遵循 [视觉映射](references/visualization.md)，不能用视觉效果暗示数据未支持的业务结论。
 
-依据上述选型结果，读取 [跨地图接入](references/providers.md) 与 [生成与验收](references/generation.md)，核实本次 SDK 版本与能力。数据可视化优先通过所选图商的公开原生图层/覆盖物或官方可视化扩展实现；图商不支持目标效果时，允许用独立 Canvas、deck.gl、ECharts 等第三方或自定义实现补充。先核实能力缺口并简述补充方案，信息明确时直接执行，无需为这种补充重复询问。通过 SDK 原生图层的属性更新组合动画可以使用；官方 custom-layer 接口或官方推荐第三方库本身不等于图商实现了该效果。具体边界与逐图层验收见 [渲染归属](references/provider-rendering.md)。接口有文档依据仍需验证用户环境，不把能力清单当已实现的模板库。
+底图类型与数据组件分别选择。用户要求卫星、山地或地形上下文时，读取[底图配置](references/basemaps.md)；影像不改变统计口径，DEM 地形不等于指标柱高。不要为常规统计地图默认增加地形、影像付费资源或视频依赖。
 
-- 默认交付 `map.html`，内嵌本次必要数据、样式与业务脚本；SDK/底图仍可联网。需 HTTP 或外部资源时交付完整目录与启动命令，具体见生成指南。用户指定现有项目时按其要求实现；默认直接加载已分析的数据，打开即看到该数据。仅添加本次有用的图例、详情、筛选、时间控制、效果切换和地图供应商切换。页面采用用户语言。
-- 使用统一数据模型和稳定 ID；数据分析、字段绑定和聚合只做一次。切换地图保留指标、图例尺度、筛选、时间、选中项与地理范围，各家底图可有不同风格。
-- 原始坐标保留不变，在适配器边界生成目标坐标副本。不能从数值范围猜 WGS84/GCJ02/BD09；未知 CRS 可继续代码与分析，在明确前不把点叠到真实底图。RFC 7946 GeoJSON 默认 WGS84，自声明 CRS 或投影米制坐标需另行处理。
-- 只有地址时先确定地区和所选地理编码服务，记录匹配置信度及失败项，不编造坐标。外部地理编码按已授权的数据和目的服务执行；授权不覆盖时说明具体传输与服务再询问。服务返回内容的跨地图使用限制按当前条款核查。
-- Key 不进入 Skill、示例、日志或版本提交。用户提供的浏览器 Key 可接入作品的本地运行配置，分享前移除；服务端 secret 不进前端。不从其他项目或历史配置搜 Key，不要求用户公开密钥。
-- 对大数据按实测性能选聚合、Worker、WebGL 或切片，并说明汇总口径；不得静默截断。动画可暂停，尊重 reduced-motion，保留版权标识。上传文本用安全文本渲染。
+在工作目录保留简短 `viz-plan.json` 或等价说明，记录数据依据、聚合口径、固定域、图商、图层 API、渲染归属和待验证项；采用补充渲染时写明能力缺口。结构见选型文档，不记录 Key。
 
-## 4. 验证并交付
+## 3. 生成作品
 
-- 按每层声明的渲染来源检查创建、注册、更新与拾取；原生层核对 SDK/官方扩展，补充层核对能力缺口及其实际渲染器。SDK 内部使用 Canvas/WebGL 是正常实现，不能仅凭页面有 canvas 判定。再检查切换图商按目标能力选择并接入对应数据层，原生可用时恢复原生实现。有浏览器工具时实际启动作品并检查真实底图与数据层；宿主没有浏览器时完成可执行检查并标记视觉验收待验证，不假称通过。核对已知位置、缩放拖动对齐、数值图例、筛选、拾取、暂停、空结果及目标屏幕布局。
-- 仅对用户要求的多图商作品、且已有 Key 的地图执行 A→B→A 切换，检查相同数据、坐标和状态；新地图就绪后替换旧实例，失败保留当前视图。清理旧事件、动画、图层和地图，防止迟到回调覆盖新状态。不同平台 zoom 数字不等价，按地理范围恢复。
-- 用户要求的效果实现并验证后再交付，不把地图选项存在、SDK script 加载成功或代码编译成功当作底图验收。无法用真实 Key 验证的部分明确标出。
-- 提供地图作品链接、可运行源文件和启动方式，简述数据发现、效果选择及实际使用的各家图层；更新选型说明中的验证状态，明确仍未验证的路线。没有用户发布要求时，不自动公开或上传其数据。
+按分析目标在以下三类中选择入口，不默认读取所有参考资料。平面可视化从[统一组件清单](references/visualizations.md)平等选择；各组件的必要输入因其表达含义而异。直接编写组件调用或核对构造参数时读[类参考手册](references/class-reference.md)。[源码架构](references/architecture.md)仅用于开发，不决定业务选型。
+
+### 可视化组件
+
+| 任务 | 入口与按需参考 |
+|---|---|
+| 散点、分类点、数值着色点、气泡、聚合、热力、线、区域设色、3D 拉伸、飞线、呼吸点、雷达扫描、蜂窝 | `scripts/build_visual_html.py`；[组件清单、输入与统一 API](references/visualizations.md) |
+
+### 场景叙事组件
+
+| 任务 | 入口与按需参考 |
+|---|---|
+| 多日旅游行程、日期切换与站点讲解 | 原始站点表先用 `scripts/prepare_itinerary.py` 核实字段、顺序和路径关联，再用 `scripts/build_itinerary_html.py`；[旅游规划组件](references/travel-itinerary.md) |
+| 故事讲述、历史事件或出征地点的章节时间轴 | 原始点位表先用 `scripts/prepare_story.py` 明确事件顺序与坐标，再用 `scripts/build_story_html.py`；[故事时间轴组件](references/story-timeline.md) |
+| 镜头跟随、地理解说、山地/三维飞越或视频故事 | 已有规范化故事/旅游数据可先用 `scripts/prepare_scene.py`，或将已提供的地点、路径与章节编排为 `scene.json`，再用 `scripts/build_scene_html.py`；[场景镜头组件](references/scene-narrative.md)。用户明确要求 MP4 时再用 `scripts/build_scene_video.py`，见[视频输出](references/video-export.md) |
+
+### 地球模式组件
+
+| 任务 | 入口与按需参考 |
+|---|---|
+| 未指定图商、需要全球球面飞线、区域设色或指标柱 | `scripts/build_globe_html.py`；[地球组件与输入](references/globe-effects.md) |
+
+指定其他图商时使用[接入配置](references/providers.md)、对应能力文档与[官方扩展实现](references/official-recipes.md)。各类作品的深浅主题、布局和交互见[主题](references/themes.md)与[成品布局](references/presentation.md)；数据内嵌、启动和交付见[生成与验收](references/generation.md)。
+
+平面可视化生成命令：
+
+```bash
+python3 "SKILL_DIR/scripts/build_visual_html.py" "WORK/profile-bound/normalized.geojson" \
+  --spec "WORK/visual-spec.json" --out "WORK/map.html"
+```
+
+已规范化输入可直接替换命令中的数据路径。飞线使用已核实坐标的 OD JSON，呼吸点、雷达与蜂窝使用 Point GeoJSON；详见组件清单。指定 Mapbox 时增加 `--provider mapbox`，以及本任务已授权的 `--config FILE` 或 `--token-env NAME`。该工具只对已有可验证实现的组件生成 Mapbox HTML；其余图商按相应能力文档实现，不静默换图商。旧生成器保留为内部实现或兼容入口。
+
+- 默认交付 `map.html`，内嵌必要数据和业务代码；需要外部资源时提供完整目录及启动命令。按用户语言设置标题、单位、业务说明和 `locale`。
+- 页面突出结果，只加本次有用的图例、详情、筛选和控制；记录列表默认隐藏。主题、筛选、图例和统计保持一致，避免大气泡遮挡、热力过饱和或缺失与零值混淆。
+- 原始坐标保留，转换在适配边界生成副本。统计、稳定 ID、分类颜色和数值域保持一致；多图商切换仅按用户要求实现。
+- 浏览器 Key 仅接入本地作品配置，分享前移除；服务端 secret 不进前端。Key 只用于本次选定图商的地图可视化，不用于请求地理编码、算路或外部业务数据。上传文本按数据安全渲染。
+- 对大数据按实测选择聚合、Worker 或切片，不静默截断。动画提供暂停并尊重 reduced-motion；保留必要的数据许可和地图版权标识。
+- 场景中的路线、地点及业务时间仍来自用户数据；镜头运动和章节时长只是叙事编排。无真实路径时标为示意连接；静态地图需地理范围才可定位叠加。三维飞越需真实 DEM/3D Tiles 资源，不用插值伪造地形。字幕、图片和旁白使用用户提供或明确授权的内容。
+- 中国地图任务遵循适用地图合规要求；宿主提供内置地图合规 Skill 时按宿主方式读取，仅在具体实现受影响且信息不足时澄清。
+
+## 4. 验证与交付
+
+在浏览器检查真实底图、已知位置、数据层、图例、缩放、筛选、拾取和目标屏幕布局；检查动画暂停、空结果及资源清理。图层注册或 SDK 加载成功不等于画面通过。无浏览器或缺真实 Key 时明确标注尚未验收的部分，不假称通过。
+
+视频还需检查实际渲染帧、路线首尾、章节切点与音画同步。只生成工程不称为 MP4 已导出；地图 Key、影像和 DEM 的运行验收与代码测试分别记录。
+
+按 [生成与验收](references/generation.md) 记录实际结果，交付作品链接、源文件和启动方式，简述数据发现与效果选择。没有发布要求时不上传用户数据。组件和图商的已知限制见 [验证边界](references/verification.md)；仓库历史测试不代表本次作品或所有宿主均已验收。

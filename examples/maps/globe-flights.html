@@ -1,0 +1,198 @@
+<!doctype html><!--
+MIT License
+
+Copyright (c) 2026 FloraCat526
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+--><html data-demo-kind="globe" lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>全球航空连接</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:#0b1020;color:#f3f7fc}#globe{position:fixed;inset:0;background:radial-gradient(ellipse at 58% 48%,#172741 0,#0b1020 62%)}.globe-container canvas{outline:none}.veil{pointer-events:none;position:fixed;inset:0;background:linear-gradient(90deg,rgba(7,13,26,.9),rgba(7,13,26,.38) 27%,transparent 58%)}.panel{position:fixed;left:clamp(18px,3.4vw,58px);top:clamp(18px,4vh,52px);width:min(345px,calc(100vw - 36px));padding:22px 23px;background:rgba(15,25,43,.7);border:1px solid rgba(151,193,230,.18);border-radius:21px;box-shadow:0 24px 70px rgba(0,0,0,.19);backdrop-filter:blur(18px)}.eyebrow{color:#77d7ef;letter-spacing:.18em;text-transform:uppercase;font-size:10px;font-weight:800}.panel h1{margin:13px 0 8px;font-size:clamp(23px,2vw,32px);line-height:1.15;letter-spacing:-.04em}.description{color:#a9bbce;font-size:13px;line-height:1.65;margin:0}.number{display:block;margin:25px 0 2px;font-size:36px;font-weight:750;letter-spacing:-.055em}.measure{color:#91a7bc;font-size:12px}.rule{height:1px;background:rgba(171,201,229,.15);margin:20px 0}.note{color:#b6c8d8;font-size:12px;line-height:1.55;margin:0}.actions{display:flex;gap:9px;margin-top:19px}.actions button{border:1px solid #2b4660;background:#1a3047;color:#d8edf8;border-radius:10px;padding:9px 13px;font:inherit;font-size:12px;cursor:pointer}.actions button:hover{background:#244463}.detail{margin-top:15px;min-height:30px;color:#e8d49a;font-size:12px;line-height:1.55}.credit{position:fixed;bottom:19px;left:clamp(18px,3.4vw,58px);font-size:11px;color:#8aa0b7;background:rgba(11,18,31,.7);padding:7px 11px;border-radius:8px}.credit a{color:#bdd9ea}.legend{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:17px;color:#a9bbce;font-size:11px}.swatch{width:10px;height:10px;border-radius:50%;display:inline-block}.gradient{height:7px;width:100%;border-radius:9px;background:linear-gradient(90deg,#496b83,#f4be65,#e75d40)}#status{color:#83d7ef;font-size:11px;margin-top:12px}@media(max-width:700px){.panel{left:12px;top:auto;bottom:26px;width:calc(100vw - 24px);padding:12px 15px}.panel h1{font-size:20px;margin:7px 0 4px}.description{font-size:11px;line-height:1.4}.number{font-size:25px;margin-top:7px}.rule,.note{display:none}.legend{margin-top:8px}.actions{margin-top:8px}.actions button{padding:6px 9px}.detail{margin-top:8px;min-height:15px}#status{margin-top:4px}.veil{background:linear-gradient(0deg,rgba(7,13,26,.8),transparent 50%)}.credit{left:12px;bottom:5px;font-size:9px;padding:2px 5px}}
+</style><style>
+.credit{left:auto;right:18px;bottom:18px;z-index:5;padding:0;background:none}
+.credit summary{display:grid;place-items:center;width:27px;height:27px;border:1px solid #ffffff55;border-radius:50%;background:#e9f3ffed;color:#172339;font-size:15px;font-weight:750;line-height:1;list-style:none;cursor:pointer;box-shadow:0 2px 10px #0005}
+.credit summary::-webkit-details-marker{display:none}
+.credit summary:focus-visible{outline:2px solid #83d7ef;outline-offset:3px}
+.credit-body{position:absolute;right:0;bottom:37px;width:max-content;max-width:min(300px,calc(100vw - 36px));padding:10px 12px;border:1px solid #51657c;border-radius:9px;background:#142338f5;color:#d7e6f6;font-size:11px;line-height:1.5;box-shadow:0 8px 22px #0006;overflow-wrap:anywhere}
+.credit-body a{color:#d7e6f6}
+@media(max-width:700px){.panel{bottom:54px}.credit{left:auto;right:18px;bottom:15px;padding:0}.credit-body{right:38px;bottom:0}}
+</style><script src="https://unpkg.com/globe.gl@2.46.2/dist/globe.gl.min.js"></script><link rel="stylesheet" href="../assets/demo-panels.css"></head><body><div id="globe" role="img" aria-label="交互式地球可视化"></div><div class="veil"></div>
+<section class="panel"><div class="eyebrow">GEO DATA VIZ · GLOBE</div><h1>全球航空连接</h1><p class="description">从新加坡出发的历史航线，按目的地洲着色。</p><strong class="number">125</strong><span class="measure">条历史连接</span><div class="legend" id="legend"></div><div class="rule"></div><p class="note">弧线表示机场连接关系，飞行高度与动效均为视觉示意。</p><div class="actions"><button id="reset" type="button">回到主视角</button><button id="motion" type="button">暂停旋转</button></div><div class="detail" id="detail">点击地球上的数据查看详情</div><div id="status" role="status">正在加载地球…</div></section><details class="credit"><summary aria-label="数据来源">!</summary><div class="credit-body"><a href="https://openflights.org/data.php" target="_blank" rel="noopener noreferrer">OpenFlights · 2014</a></div></details>
+<script id="globe-data" type="application/json">[{"id":"ADL","source":[103.994003,1.35019],"target":[138.531006,-34.945],"label":"Adelaide International Airport","category":"Oceania"},{"id":"AKL","source":[103.994003,1.35019],"target":[174.792007446,-37.008098602299995],"label":"Auckland International Airport","category":"Oceania"},{"id":"AMD","source":[103.994003,1.35019],"target":[72.63469696039999,23.0771999359],"label":"Sardar Vallabhbhai Patel International Airport","category":"Asia"},{"id":"AMS","source":[103.994003,1.35019],"target":[4.76389,52.308601],"label":"Amsterdam Airport Schiphol","category":"Europe"},{"id":"AUH","source":[103.994003,1.35019],"target":[54.651100158691406,24.433000564575195],"label":"Abu Dhabi International Airport","category":"Asia"},{"id":"BCN","source":[103.994003,1.35019],"target":[2.07846,41.2971],"label":"Barcelona International Airport","category":"Europe"},{"id":"BDO","source":[103.994003,1.35019],"target":[107.57599639892578,-6.900629997253418],"label":"Husein Sastranegara International Airport","category":"Asia"},{"id":"BKI","source":[103.994003,1.35019],"target":[116.0510025024414,5.9372100830078125],"label":"Kota Kinabalu International Airport","category":"Asia"},{"id":"BKK","source":[103.994003,1.35019],"target":[100.74700164794922,13.681099891662598],"label":"Suvarnabhumi Airport","category":"Asia"},{"id":"BLR","source":[103.994003,1.35019],"target":[77.706299,13.1979],"label":"Kempegowda International Airport","category":"Asia"},{"id":"BNE","source":[103.994003,1.35019],"target":[153.11700439453125,-27.384199142456055],"label":"Brisbane International Airport","category":"Oceania"},{"id":"BOM","source":[103.994003,1.35019],"target":[72.8678970337,19.0886993408],"label":"Chhatrapati Shivaji International Airport","category":"Asia"},{"id":"BPN","source":[103.994003,1.35019],"target":[116.893997192,-1.26827001572],"label":"Sultan Aji Muhamad Sulaiman Airport","category":"Asia"},{"id":"BWN","source":[103.994003,1.35019],"target":[114.9280014038086,4.944200038909912],"label":"Brunei International Airport","category":"Asia"},{"id":"CAN","source":[103.994003,1.35019],"target":[113.29900360107422,23.39240074157715],"label":"Guangzhou Baiyun International Airport","category":"Asia"},{"id":"CCU","source":[103.994003,1.35019],"target":[88.44670104980469,22.654699325561523],"label":"Netaji Subhash Chandra Bose International Airport","category":"Asia"},{"id":"CDG","source":[103.994003,1.35019],"target":[2.55,49.012798],"label":"Charles de Gaulle International Airport","category":"Europe"},{"id":"CEB","source":[103.994003,1.35019],"target":[123.97899627686,10.307499885559],"label":"Mactan Cebu International Airport","category":"Asia"},{"id":"CGK","source":[103.994003,1.35019],"target":[106.65599823,-6.1255698204],"label":"Soekarno-Hatta International Airport","category":"Asia"},{"id":"CHC","source":[103.994003,1.35019],"target":[172.53199768066406,-43.48939895629883],"label":"Christchurch International Airport","category":"Oceania"},{"id":"CJB","source":[103.994003,1.35019],"target":[77.0434036255,11.029999733],"label":"Coimbatore International Airport","category":"Asia"},{"id":"CKG","source":[103.994003,1.35019],"target":[106.64199829101562,29.719200134277344],"label":"Chongqing Jiangbei International Airport","category":"Asia"},{"id":"CMB","source":[103.994003,1.35019],"target":[79.88410186767578,7.180759906768799],"label":"Bandaranaike International Colombo Airport","category":"Asia"},{"id":"CNX","source":[103.994003,1.35019],"target":[98.962600708,18.766799926799997],"label":"Chiang Mai International Airport","category":"Asia"},{"id":"COK","source":[103.994003,1.35019],"target":[76.401901,10.152],"label":"Cochin International Airport","category":"Asia"},{"id":"CPH","source":[103.994003,1.35019],"target":[12.656000137329,55.617900848389],"label":"Copenhagen Kastrup Airport","category":"Europe"},{"id":"CRK","source":[103.994003,1.35019],"target":[120.559998,15.186],"label":"Diosdado Macapagal International Airport","category":"Asia"},{"id":"CSX","source":[103.994003,1.35019],"target":[113.220001221,28.189199447599997],"label":"Changsha Huanghua International Airport","category":"Asia"},{"id":"CTU","source":[103.994003,1.35019],"target":[103.9469985961914,30.578500747680664],"label":"Chengdu Shuangliu International Airport","category":"Asia"},{"id":"DAC","source":[103.994003,1.35019],"target":[90.397783,23.843347],"label":"Hazrat Shahjalal International Airport","category":"Asia"},{"id":"DAD","source":[103.994003,1.35019],"target":[108.1989974975586,16.043899536132812],"label":"Da Nang International Airport","category":"Asia"},{"id":"DEL","source":[103.994003,1.35019],"target":[77.103104,28.5665],"label":"Indira Gandhi International Airport","category":"Asia"},{"id":"DIL","source":[103.994003,1.35019],"target":[125.526000977,-8.54640007019],"label":"Presidente Nicolau Lobato International Airport","category":"Asia"},{"id":"DME","source":[103.994003,1.35019],"target":[37.90629959106445,55.40879821777344],"label":"Domodedovo International Airport","category":"Europe"},{"id":"DMK","source":[103.994003,1.35019],"target":[100.607002258,13.9125995636],"label":"Don Mueang International Airport","category":"Asia"},{"id":"DOH","source":[103.994003,1.35019],"target":[51.608056,25.273056],"label":"Hamad International Airport","category":"Asia"},{"id":"DPS","source":[103.994003,1.35019],"target":[115.16699981689,-8.7481698989868],"label":"Ngurah Rai (Bali) International Airport","category":"Asia"},{"id":"DRW","source":[103.994003,1.35019],"target":[130.8769989013672,-12.41469955444336],"label":"Darwin International Airport","category":"Oceania"},{"id":"DVO","source":[103.994003,1.35019],"target":[125.64600372314453,7.1255202293396],"label":"Francisco Bangoy International Airport","category":"Asia"},{"id":"DXB","source":[103.994003,1.35019],"target":[55.3643989563,25.2527999878],"label":"Dubai International Airport","category":"Asia"},{"id":"FCO","source":[103.994003,1.35019],"target":[12.2388889,41.8002778],"label":"Leonardo da Vinci–Fiumicino Airport","category":"Europe"},{"id":"FOC","source":[103.994003,1.35019],"target":[119.66300201416016,25.935100555419922],"label":"Fuzhou Changle International Airport","category":"Asia"},{"id":"FRA","source":[103.994003,1.35019],"target":[8.570556,50.033333],"label":"Frankfurt am Main Airport","category":"Europe"},{"id":"FUK","source":[103.994003,1.35019],"target":[130.4510040283203,33.585899353027344],"label":"Fukuoka Airport","category":"Asia"},{"id":"HAK","source":[103.994003,1.35019],"target":[110.45899963378906,19.934900283813477],"label":"Haikou Meilan International Airport","category":"Asia"},{"id":"HAN","source":[103.994003,1.35019],"target":[105.80699920654297,21.221200942993164],"label":"Noi Bai International Airport","category":"Asia"},{"id":"HDY","source":[103.994003,1.35019],"target":[100.392997742,6.93320989609],"label":"Hat Yai International Airport","category":"Asia"},{"id":"HEL","source":[103.994003,1.35019],"target":[24.963300704956,60.317199707031],"label":"Helsinki Vantaa Airport","category":"Europe"},{"id":"HGH","source":[103.994003,1.35019],"target":[120.43399810791016,30.22949981689453],"label":"Hangzhou Xiaoshan International Airport","category":"Asia"},{"id":"HKG","source":[103.994003,1.35019],"target":[113.915001,22.308901],"label":"Hong Kong International Airport","category":"Asia"},{"id":"HKT","source":[103.994003,1.35019],"target":[98.316902,8.1132],"label":"Phuket International Airport","category":"Asia"},{"id":"HND","source":[103.994003,1.35019],"target":[139.779999,35.552299],"label":"Tokyo Haneda International Airport","category":"Asia"},{"id":"HYD","source":[103.994003,1.35019],"target":[78.4298553467,17.2313175201],"label":"Rajiv Gandhi International Airport","category":"Asia"},{"id":"ICN","source":[103.994003,1.35019],"target":[126.45099639892578,37.46910095214844],"label":"Incheon International Airport","category":"Asia"},{"id":"ILO","source":[103.994003,1.35019],"target":[122.493358,10.833017],"label":"Iloilo International Airport","category":"Asia"},{"id":"IPH","source":[103.994003,1.35019],"target":[101.09200286865234,4.567969799041748],"label":"Sultan Azlan Shah Airport","category":"Asia"},{"id":"IST","source":[103.994003,1.35019],"target":[28.8146,40.976898],"label":"Atatürk International Airport","category":"Asia"},{"id":"JED","source":[103.994003,1.35019],"target":[39.156502,21.6796],"label":"King Abdulaziz International Airport","category":"Asia"},{"id":"JNB","source":[103.994003,1.35019],"target":[28.246,-26.1392],"label":"OR Tambo International Airport","category":"Africa"},{"id":"JOG","source":[103.994003,1.35019],"target":[110.43199920654297,-7.788179874420166],"label":"Adi Sutjipto International Airport","category":"Asia"},{"id":"KBR","source":[103.994003,1.35019],"target":[102.29299926757812,6.1668500900268555],"label":"Sultan Ismail Petra Airport","category":"Asia"},{"id":"KBV","source":[103.994003,1.35019],"target":[98.9861984253,8.09912014008],"label":"Krabi Airport","category":"Asia"},{"id":"KCH","source":[103.994003,1.35019],"target":[110.34700012207031,1.4846999645233154],"label":"Kuching International Airport","category":"Asia"},{"id":"KHH","source":[103.994003,1.35019],"target":[120.3499984741211,22.57710075378418],"label":"Kaohsiung International Airport","category":"Asia"},{"id":"KIX","source":[103.994003,1.35019],"target":[135.24400329589844,34.42729949951172],"label":"Kansai International Airport","category":"Asia"},{"id":"KLO","source":[103.994003,1.35019],"target":[122.375999451,11.679400444],"label":"Kalibo International Airport","category":"Asia"},{"id":"KMG","source":[103.994003,1.35019],"target":[102.9291667,25.1019444],"label":"Kunming Changshui International Airport","category":"Asia"},{"id":"KTM","source":[103.994003,1.35019],"target":[85.3591,27.6966],"label":"Tribhuvan International Airport","category":"Asia"},{"id":"KUA","source":[103.994003,1.35019],"target":[103.20899963378906,3.7753899097442627],"label":"Kuantan Airport","category":"Asia"},{"id":"KUL","source":[103.994003,1.35019],"target":[101.70999908447,2.745579957962],"label":"Kuala Lumpur International Airport","category":"Asia"},{"id":"KWE","source":[103.994003,1.35019],"target":[106.8010025024414,26.53849983215332],"label":"Longdongbao Airport","category":"Asia"},{"id":"LGK","source":[103.994003,1.35019],"target":[99.72869873046875,6.329730033874512],"label":"Langkawi International Airport","category":"Asia"},{"id":"LHR","source":[103.994003,1.35019],"target":[-0.461941,51.4706],"label":"London Heathrow Airport","category":"Europe"},{"id":"LJG","source":[103.994003,1.35019],"target":[100.246002197,26.6800003052],"label":"Lijiang Airport","category":"Asia"},{"id":"LOP","source":[103.994003,1.35019],"target":[116.276675,-8.757322],"label":"Lombok International Airport","category":"Asia"},{"id":"MAA","source":[103.994003,1.35019],"target":[80.16929626464844,12.990005493164062],"label":"Chennai International Airport","category":"Asia"},{"id":"MDC","source":[103.994003,1.35019],"target":[124.9260025024414,1.5492600202560425],"label":"Sam Ratulangi Airport","category":"Asia"},{"id":"MEL","source":[103.994003,1.35019],"target":[144.843002,-37.673302],"label":"Melbourne International Airport","category":"Oceania"},{"id":"MFM","source":[103.994003,1.35019],"target":[113.592003,22.149599],"label":"Macau International Airport","category":"Asia"},{"id":"MLE","source":[103.994003,1.35019],"target":[73.52909851074219,4.191830158233643],"label":"Malé International Airport","category":"Asia"},{"id":"MNL","source":[103.994003,1.35019],"target":[121.019997,14.5086],"label":"Ninoy Aquino International Airport","category":"Asia"},{"id":"MUC","source":[103.994003,1.35019],"target":[11.7861,48.353802],"label":"Munich Airport","category":"Europe"},{"id":"MXP","source":[103.994003,1.35019],"target":[8.72811,45.6306],"label":"Malpensa International Airport","category":"Europe"},{"id":"MYY","source":[103.994003,1.35019],"target":[113.98699951171875,4.322010040283203],"label":"Miri Airport","category":"Asia"},{"id":"NGB","source":[103.994003,1.35019],"target":[121.46199798583984,29.82670021057129],"label":"Ningbo Lishe International Airport","category":"Asia"},{"id":"NGO","source":[103.994003,1.35019],"target":[136.80499267578125,34.8583984375],"label":"Chubu Centrair International Airport","category":"Asia"},{"id":"NKG","source":[103.994003,1.35019],"target":[118.86199951171875,31.742000579833984],"label":"Nanjing Lukou Airport","category":"Asia"},{"id":"NNG","source":[103.994003,1.35019],"target":[108.1719970703125,22.608299255371094],"label":"Nanning Wuxu Airport","category":"Asia"},{"id":"NRT","source":[103.994003,1.35019],"target":[140.386001587,35.7647018433],"label":"Narita International Airport","category":"Asia"},{"id":"OOL","source":[103.994003,1.35019],"target":[153.505004883,-28.1644001007],"label":"Gold Coast Airport","category":"Oceania"},{"id":"PEK","source":[103.994003,1.35019],"target":[116.58499908447266,40.080101013183594],"label":"Beijing Capital International Airport","category":"Asia"},{"id":"PEN","source":[103.994003,1.35019],"target":[100.2770004272461,5.297140121459961],"label":"Penang International Airport","category":"Asia"},{"id":"PER","source":[103.994003,1.35019],"target":[115.96700286865234,-31.94029998779297],"label":"Perth International Airport","category":"Oceania"},{"id":"PKU","source":[103.994003,1.35019],"target":[101.44499969482422,0.46078601479530334],"label":"Sultan Syarif Kasim Ii (Simpang Tiga) Airport","category":"Asia"},{"id":"PLM","source":[103.994003,1.35019],"target":[104.69999694824,-2.8982501029968],"label":"Sultan Mahmud Badaruddin II Airport","category":"Asia"},{"id":"PNH","source":[103.994003,1.35019],"target":[104.84400177001953,11.546600341796875],"label":"Phnom Penh International Airport","category":"Asia"},{"id":"POM","source":[103.994003,1.35019],"target":[147.22000122070312,-9.443380355834961],"label":"Port Moresby Jacksons International Airport","category":"Oceania"},{"id":"PVG","source":[103.994003,1.35019],"target":[121.80500030517578,31.143400192260742],"label":"Shanghai Pudong International Airport","category":"Asia"},{"id":"RDN","source":[103.994003,1.35019],"target":[103.00700378417969,5.765279769897461],"label":"LTS Pulau Redang Airport","category":"Asia"},{"id":"REP","source":[103.994003,1.35019],"target":[103.81300354,13.410699844400002],"label":"Siem Reap International Airport","category":"Asia"},{"id":"RGN","source":[103.994003,1.35019],"target":[96.1332015991,16.907300949099998],"label":"Yangon International Airport","category":"Asia"},{"id":"RUH","source":[103.994003,1.35019],"target":[46.69879913330078,24.957599639892578],"label":"King Khaled International Airport","category":"Asia"},{"id":"SGN","source":[103.994003,1.35019],"target":[106.652000427,10.8187999725],"label":"Tan Son Nhat International Airport","category":"Asia"},{"id":"SOC","source":[103.994003,1.35019],"target":[110.75700378417969,-7.516089916229248],"label":"Adi Sumarmo Wiryokusumo Airport","category":"Asia"},{"id":"SRG","source":[103.994003,1.35019],"target":[110.375,-6.97273],"label":"Achmad Yani Airport","category":"Asia"},{"id":"SUB","source":[103.994003,1.35019],"target":[112.78700256347656,-7.3798298835754395],"label":"Juanda International Airport","category":"Asia"},{"id":"SWA","source":[103.994003,1.35019],"target":[116.5033,23.552],"label":"Jieyang Chaoshan International Airport","category":"Asia"},{"id":"SYD","source":[103.994003,1.35019],"target":[151.177001953125,-33.94609832763672],"label":"Sydney Kingsford Smith International Airport","category":"Oceania"},{"id":"SZB","source":[103.994003,1.35019],"target":[101.54900360107422,3.130579948425293],"label":"Sultan Abdul Aziz Shah International Airport","category":"Asia"},{"id":"SZX","source":[103.994003,1.35019],"target":[113.81099700927734,22.639299392700195],"label":"Shenzhen Bao'an International Airport","category":"Asia"},{"id":"TAO","source":[103.994003,1.35019],"target":[120.374000549,36.2661018372],"label":"Liuting Airport","category":"Asia"},{"id":"TAS","source":[103.994003,1.35019],"target":[69.2811965942,41.257900238],"label":"Tashkent International Airport","category":"Asia"},{"id":"TGG","source":[103.994003,1.35019],"target":[103.10299682617188,5.3826398849487305],"label":"Sultan Mahmud Airport","category":"Asia"},{"id":"TPE","source":[103.994003,1.35019],"target":[121.233002,25.0777],"label":"Taiwan Taoyuan International Airport","category":"Asia"},{"id":"TRV","source":[103.994003,1.35019],"target":[76.9200973511,8.48211956024],"label":"Trivandrum International Airport","category":"Asia"},{"id":"TRZ","source":[103.994003,1.35019],"target":[78.70970153808594,10.765399932861328],"label":"Tiruchirapally Civil Airport Airport","category":"Asia"},{"id":"TSN","source":[103.994003,1.35019],"target":[117.346000671,39.124401092499994],"label":"Tianjin Binhai International Airport","category":"Asia"},{"id":"UPG","source":[103.994003,1.35019],"target":[119.55400085449219,-5.061629772186279],"label":"Hasanuddin International Airport","category":"Asia"},{"id":"USM","source":[103.994003,1.35019],"target":[100.06199646,9.547789573669998],"label":"Samui Airport","category":"Asia"},{"id":"VTE","source":[103.994003,1.35019],"target":[102.56300354,17.988300323500003],"label":"Wattay International Airport","category":"Asia"},{"id":"VTZ","source":[103.994003,1.35019],"target":[83.2245025635,17.721200943],"label":"Vishakhapatnam Airport","category":"Asia"},{"id":"WUH","source":[103.994003,1.35019],"target":[114.208,30.7838],"label":"Wuhan Tianhe International Airport","category":"Asia"},{"id":"WUX","source":[103.994003,1.35019],"target":[120.429000854,31.494400024399997],"label":"Sunan Shuofang International Airport","category":"Asia"},{"id":"XMN","source":[103.994003,1.35019],"target":[118.12799835205078,24.54400062561035],"label":"Xiamen Gaoqi International Airport","category":"Asia"},{"id":"ZRH","source":[103.994003,1.35019],"target":[8.54917,47.464699],"label":"Zürich Airport","category":"Europe"}]</script><script id="globe-config" type="application/json">{"effect":"flight","center":[16,103,1.9],"minValue":null,"maxValue":null,"unit":""}</script><script type="module">
+// Globe-specific, keyless visualization components. Globe.GL owns the renderer;
+// these are not MapLibre or provider-native layers.
+export const GLOBE_VERSION = '2.46.2';
+export const GLOBE_TEXTURE = 'https://cdn.jsdelivr.net/npm/three-globe@2.45.2/example/img/earth-night.jpg';
+
+const finite = value => typeof value === 'number' && Number.isFinite(value);
+const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const hexToRgb = hex => [1,3,5].map(i => parseInt(hex.slice(i,i+2),16));
+const alpha = (hex,value) => `rgba(${hexToRgb(hex).join(',')},${value})`;
+const mix = (from,to,t) => {
+  const a=hexToRgb(from), b=hexToRgb(to), x=Math.max(0,Math.min(1,t));
+  return `rgb(${a.map((v,i)=>Math.round(v+(b[i]-v)*x)).join(',')})`;
+};
+const coordinate = pair => Array.isArray(pair) && pair.length>=2 && finite(pair[0]) && finite(pair[1]) && Math.abs(pair[0])<=180 && Math.abs(pair[1])<=90;
+const features = input => input?.type==='FeatureCollection' && Array.isArray(input.features) ? input.features : Array.isArray(input) ? input : [];
+// An explicitly bound missing metric must not fall back to a different raw field.
+function globeMetric(properties,fallback){
+  if(properties?.__viz && Object.hasOwn(properties.__viz,'value'))return properties.__viz.value;
+  if(properties && Object.hasOwn(properties,'value'))return properties.value;
+  return properties?.[fallback];
+}
+
+export function normalizeGlobeFlights(input) {
+  const rows=Array.isArray(input) ? input : input?.routes;
+  if(!Array.isArray(rows)) throw Error('Flight globe requires an OD array');
+  const ids=new Set();
+  return rows.map((row,index)=>{
+    const source=row.source ?? input?.origin?.position;
+    const target=row.target ?? row.airport?.position;
+    const id=String(row.id ?? index);
+    if(!coordinate(source)||!coordinate(target)||ids.has(id)) throw Error(`Invalid or duplicate flight at row ${index+1}`);
+    ids.add(id);
+    return {id,source:[...source.slice(0,2)],target:[...target.slice(0,2)],label:String(row.label ?? row.name ?? row.airport?.name ?? id),category:String(row.category ?? row.region ?? 'Other')};
+  });
+}
+
+export function normalizeGlobeCountries(input) {
+  const rows=features(input);
+  if(!rows.length) throw Error('Country globe requires polygon features');
+  return rows.map((feature,index)=>{
+    const geometry=feature.geometry, value=globeMetric(feature.properties,'population');
+    if(!['Polygon','MultiPolygon'].includes(geometry?.type)||!Array.isArray(geometry.coordinates)||!geometry.coordinates.length) throw Error(`Invalid country polygon at row ${index+1}`);
+    if(value!==null && value!==undefined && (!finite(value)||value<0)) throw Error(`Invalid country value at row ${index+1}`);
+    return {id:String(feature.id ?? feature.properties?.iso3 ?? index),label:String(feature.properties?.__viz?.label ?? feature.properties?.name ?? feature.properties?.ADMIN ?? 'Region'),value:value ?? null,geometry};
+  });
+}
+
+export function normalizeGlobeSpikes(input) {
+  const rows=features(input);
+  if(!rows.length) throw Error('Spike globe requires point features');
+  return rows.map((feature,index)=>{
+    const coordinates=feature.geometry?.coordinates, value=globeMetric(feature.properties,'mag');
+    if(feature.geometry?.type!=='Point'||!coordinate(coordinates)||!finite(value)) throw Error(`Invalid spike at row ${index+1}`);
+    return {id:String(feature.id ?? index),lng:coordinates[0],lat:coordinates[1],value,label:String(feature.properties?.__viz?.label ?? feature.properties?.place ?? feature.properties?.name ?? `Event ${index+1}`)};
+  });
+}
+
+export function createGlobe(host,{GlobeCtor=globalThis.Globe,texture=GLOBE_TEXTURE,center={lat:16,lng:12,altitude:2.1},motion=true}={}) {
+  if(!host || typeof GlobeCtor!=='function') throw Error('Globe.GL is unavailable');
+  const globe=new GlobeCtor(host,{animateIn:motion,waitForGlobeReady:true});
+  globe.backgroundColor('#0b1020').globeImageUrl(texture).showAtmosphere(true).atmosphereColor('#3b99d4').atmosphereAltitude(.16);
+  globe.pointOfView(center,0);
+  globe.controls().autoRotate=motion;
+  globe.controls().autoRotateSpeed=.22;
+  return globe;
+}
+
+class GlobeLayer {
+  constructor(globe,{onPick=()=>{},motion=true}={}) {
+    if(!globe) throw Error('A Globe.GL instance is required');
+    this.globe=globe;this.onPick=onPick;this.motion=motion;this.paused=!motion;this.count=0;
+  }
+  pause(){this.paused=true;this.globe.controls().autoRotate=false;this.updateMotion?.();}
+  play(){if(!this.motion)return;this.paused=false;this.globe.controls().autoRotate=true;this.updateMotion?.();}
+  inspect(){return {rendererOwner:'third-party',provider:'globe.gl',version:GLOBE_VERSION,type:this.constructor.name,count:this.count,paused:this.paused};}
+  destroy(){this.pause();this.globe.arcsData([]).pointsData([]).polygonsData([]);}
+}
+
+const ROUTE_COLORS={Asia:'#f8c96b',Europe:'#a898ff',Africa:'#62d9c1',Oceania:'#58c9f5',Americas:'#fa8caa',Other:'#b6c7d8'};
+const EXTRA_ROUTE_COLORS=['#6ee7b7','#fda4af','#93c5fd','#fcd34d','#c4b5fd','#67e8f9','#fdba74','#a3e635','#f9a8d4','#86efac','#a5b4fc','#fbbf24'];
+export class GlobeFlightLayer extends GlobeLayer {
+  setData(input){
+    const rows=normalizeGlobeFlights(input);this.rows=rows;this.count=rows.length;
+    const categories=[...new Set(rows.map(row=>row.category))].sort((a,b)=>a.localeCompare(b));
+    this.categoryColors=new Map(categories.map((category,index)=>[category,ROUTE_COLORS[category]??EXTRA_ROUTE_COLORS[index%EXTRA_ROUTE_COLORS.length]]));
+    const origin=rows[0]?.source;
+    const endpoints=new Map();
+    for(const row of rows) endpoints.set(row.target.join(','),{lat:row.target[1],lng:row.target[0],label:row.label,category:row.category,row});
+    if(origin) endpoints.set(origin.join(','),{lat:origin[1],lng:origin[0],label:'Origin',category:'Origin'});
+    this.globe.arcStartLat(d=>d.row.source[1]).arcStartLng(d=>d.row.source[0]).arcEndLat(d=>d.row.target[1]).arcEndLng(d=>d.row.target[0])
+      .arcColor(d=>alpha(this.categoryColors.get(d.row.category)??ROUTE_COLORS.Other,d.flow ? .98 : .72))
+      .arcAltitudeAutoScale(.38).arcStroke(d=>d.flow ? .075 : .12).arcDashLength(d=>d.flow ? .17 : 1).arcDashGap(d=>d.flow ? .83 : 0)
+      .arcLabel(d=>escapeHtml(`${d.row.label} · ${d.row.category}`)).onArcClick(d=>this.onPick(d.row))
+      .pointsData([...endpoints.values()]).pointLat(d=>d.lat).pointLng(d=>d.lng).pointAltitude(.002)
+      .pointRadius(d=>d.category==='Origin' ? .38 : .23).pointColor(d=>d.category==='Origin' ? '#fff4c2' : this.categoryColors.get(d.category)??ROUTE_COLORS.Other)
+      .pointLabel(d=>escapeHtml(d.label)).onPointClick(d=>this.onPick(d.row??{label:d.label,category:d.category})).pointsTransitionDuration(this.motion?800:0)
+      .arcsData(rows.flatMap(row=>[{row,flow:false},{row,flow:true}]));
+    this.updateMotion();return this;
+  }
+  updateMotion(){this.globe.arcDashAnimateTime(d=>d.flow&&!this.paused?3000:0);}
+}
+
+export class GlobeChoroplethLayer extends GlobeLayer {
+  setData(input){
+    const rows=normalizeGlobeCountries(input);this.count=rows.length;
+    const values=rows.map(d=>d.value).filter(v=>finite(v)&&v>0);
+    const lo=values.length?Math.log10(1+Math.min(...values)):0,hi=values.length?Math.log10(1+Math.max(...values)):1;
+    const ratio=d=>(Math.log10(1+Math.max(0,d.value))-lo)/(hi-lo||1);
+    this.globe.polygonGeoJsonGeometry(d=>d.geometry).polygonAltitude(.004).polygonStrokeColor('#0a2331')
+      .polygonCapColor(d=>{if(d.value===null)return '#26384f';const x=ratio(d);return x<.7?mix('#496b83','#f4be65',x/.7):mix('#f4be65','#e75d40',(x-.7)/.3)})
+      .polygonSideColor(d=>d.value===null ? '#1c293d' : mix('#315c72','#bc674f',ratio(d)))
+      .polygonLabel(d=>escapeHtml(`${d.label}: ${d.value===null?'无数据':d.value.toLocaleString()}`))
+      .onPolygonClick(d=>this.onPick(d)).polygonsTransitionDuration(this.motion?850:0).polygonsData(rows);
+    return this;
+  }
+}
+
+export class GlobeSpikeLayer extends GlobeLayer {
+  constructor(globe,options={}){
+    super(globe,options);this.bounds={min:options.minValue,max:options.maxValue};this.unit=String(options.unit??'');
+    if((this.bounds.min!==undefined&&!finite(this.bounds.min))||(this.bounds.max!==undefined&&!finite(this.bounds.max))||(this.bounds.min!==undefined&&this.bounds.max!==undefined&&this.bounds.min>=this.bounds.max))throw Error('Spike metric range must increase');
+  }
+  setData(input){
+    const rows=normalizeGlobeSpikes(input);this.count=rows.length;
+    this.minValue=this.bounds.min??Math.min(...rows.map(d=>d.value));this.maxValue=this.bounds.max??Math.max(...rows.map(d=>d.value));
+    if(this.maxValue<=this.minValue){const delta=Math.max(1,Math.abs(this.minValue)*.1);this.minValue-=delta;this.maxValue+=delta;}
+    const span=this.maxValue-this.minValue,ratio=d=>Math.max(0,Math.min(1,(d.value-this.minValue)/span));
+    this.globe.pointLat(d=>d.lat).pointLng(d=>d.lng).pointAltitude(d=>.014+Math.pow(ratio(d),1.4)*.16)
+      .pointRadius(d=>.17+.1*ratio(d)).pointColor(d=>{const x=ratio(d);return x<.55?mix('#90ddf5','#ffad7b',x/.55):mix('#ffad7b','#ff5d67',(x-.55)/.45)})
+      .pointLabel(d=>escapeHtml(`${d.label} · ${d.value.toLocaleString(undefined,{maximumFractionDigits:2})}${this.unit?` ${this.unit}`:''}`)).onPointClick(d=>this.onPick(d))
+      .pointsTransitionDuration(this.motion?800:0).pointsData(rows);
+    return this;
+  }
+}
+
+const input=JSON.parse(document.getElementById('globe-data').textContent),config=JSON.parse(document.getElementById('globe-config').textContent);
+const status=document.getElementById('status'),detail=document.getElementById('detail'),legend=document.getElementById('legend');
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fmt=value=>Number(value).toLocaleString(undefined,{maximumFractionDigits:2});
+const valueWithUnit=value=>`${fmt(value)}${config.unit?' '+config.unit:''}`;
+const describe=row=>{if(config.effect==='flight')return `${row.label} · ${row.category}`;return `${row.label} · ${row.value===null?'无数据':valueWithUnit(row.value)}`};
+try {
+ const mobile=innerWidth<700;const globe=createGlobe(document.getElementById('globe'),{center:{lat:config.center[0],lng:config.center[1],altitude:config.center[2]+(mobile ? 0.55 : 0)},motion:!reduced});
+ if(mobile)globe.globeOffset([0,-95]);
+ let layer;
+ const options={motion:!reduced,onPick:row=>{detail.textContent=describe(row)}};
+ if(config.effect==='flight')layer=new GlobeFlightLayer(globe,options).setData(input);
+ else if(config.effect==='choropleth')layer=new GlobeChoroplethLayer(globe,options).setData(input);
+ else layer=new GlobeSpikeLayer(globe,{...options,minValue:config.minValue,maxValue:config.maxValue,unit:config.unit}).setData(input);
+ if(config.effect==='flight')for(const [category,color] of layer.categoryColors){const swatch=document.createElement('span');swatch.className='swatch';swatch.style.background=color;const label=document.createElement('span');label.textContent=({Asia:'亚洲',Europe:'欧洲',Africa:'非洲',Oceania:'大洋洲',Americas:'美洲',Other:'其他'})[category]??category;legend.append(swatch,label)}
+ else if(config.effect==='choropleth')legend.innerHTML='<span>较少</span><span class="gradient"></span><span>较多 · 灰色为缺失</span>';
+ else {const low=document.createElement('span'),bar=document.createElement('span'),high=document.createElement('span');low.textContent=valueWithUnit(config.minValue);bar.className='gradient';bar.style.background='linear-gradient(90deg,#90ddf5,#ffad7b,#ff5d67)';high.textContent=valueWithUnit(config.maxValue);legend.append(low,bar,high)}
+ document.getElementById('reset').addEventListener('click',()=>globe.pointOfView({lat:config.center[0],lng:config.center[1],altitude:config.center[2]+(innerWidth<700 ? 0.55 : 0)},700));
+ const motion=document.getElementById('motion');if(reduced){motion.textContent='减少动态效果';motion.disabled=true;}
+ motion.addEventListener('click',()=>{if(layer.paused){layer.play();motion.textContent='暂停旋转'}else{layer.pause();motion.textContent='继续旋转'}});
+ const resize=new ResizeObserver(()=>globe.width(innerWidth).height(innerHeight));resize.observe(document.getElementById('globe'));
+ document.addEventListener('visibilitychange',()=>{if(document.hidden){globe.pauseAnimation()}else{globe.resumeAnimation()}});
+ globe.onGlobeReady(()=>{status.textContent='拖动旋转 · 滚轮缩放 · 点击查看'});
+ window.addEventListener('beforeunload',()=>{resize.disconnect();layer.destroy();globe.pauseAnimation();globe.renderer().dispose()},{once:true});
+} catch(error) {status.textContent=`地球加载失败：${error.message}`;console.error(error)}
+</script></body></html>

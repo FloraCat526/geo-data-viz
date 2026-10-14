@@ -1,0 +1,209 @@
+{
+  "schemaVersion": 1,
+  "provider": "maplibre",
+  "theme": "dark",
+  "title": "阿尔卑斯 · 山地飞越",
+  "duration": 24,
+  "fps": 30,
+  "width": 1920,
+  "height": 1080,
+  "metadata": {
+    "dataCrs": "wgs84",
+    "source": "SWISSIMAGE / Mapterhorn / Wikidata CC0",
+    "retrievedDate": "2026-10-08",
+    "cameraSemantics": "Editorial camera keyframes, not a recorded flight or hiking route",
+    "timing": "24 seconds of editorial narration, not travel time",
+    "imageryTime": "current mosaic; acquisition dates vary by area"
+  },
+  "attribution": "影像 ©swisstopo；高程 © Mapterhorn（瑞士来源 swissALTI3D）；地点坐标 Wikidata CC0。影像是 current 正射航片镶嵌，不是实时画面。镜头路径为演示编排，未提供或绘制真实飞行、徒步路线。地形夸张 1.2 倍；不用于导航。",
+  "basemap": {
+    "type": "terrain",
+    "terrain": {
+      "url": "https://tiles.mapterhorn.com/tilejson.json",
+      "encoding": "terrarium",
+      "tileSize": 512,
+      "exaggeration": 1.2,
+      "attribution": "<a href=\"https://mapterhorn.com/attribution/\">© Mapterhorn</a>"
+    },
+    "imagery": {
+      "tiles": [
+        "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.swissimage/default/current/3857/{z}/{x}/{y}.jpeg"
+      ],
+      "tileSize": 256,
+      "minzoom": 0,
+      "maxzoom": 20,
+      "attribution": "<a href=\"https://www.swisstopo.admin.ch/\">©swisstopo</a>"
+    },
+    "showHillshade": false
+  },
+  "locations": [
+    {
+      "id": "grindelwald",
+      "name": "格林德瓦",
+      "coordinates": [
+        8.0333333333333,
+        46.625555555556
+      ]
+    },
+    {
+      "id": "kleine-scheidegg",
+      "name": "小夏戴克",
+      "coordinates": [
+        7.9613888888889,
+        46.584722222222
+      ]
+    },
+    {
+      "id": "eiger",
+      "name": "艾格峰",
+      "coordinates": [
+        8.005286822,
+        46.577607529
+      ]
+    },
+    {
+      "id": "monch",
+      "name": "僧侣峰",
+      "coordinates": [
+        7.9972222222222,
+        46.558333333333
+      ]
+    },
+    {
+      "id": "jungfraujoch",
+      "name": "少女峰山坳",
+      "coordinates": [
+        7.9830555555556,
+        46.547777777778
+      ]
+    },
+    {
+      "id": "jungfrau",
+      "name": "少女峰",
+      "coordinates": [
+        7.9625,
+        46.536944444444
+      ]
+    }
+  ],
+  "routes": [],
+  "audio": [],
+  "chapters": [
+    {
+      "id": "valley",
+      "start": 0,
+      "end": 6,
+      "title": "山谷启程",
+      "text": "从格林德瓦向阿尔卑斯山脊推进。",
+      "locationId": "grindelwald",
+      "camera": {
+        "from": {
+          "center": [
+            8.022,
+            46.61
+          ],
+          "zoom": 12.45,
+          "pitch": 58,
+          "bearing": 178
+        },
+        "to": {
+          "center": [
+            8.002,
+            46.585
+          ],
+          "zoom": 12.8,
+          "pitch": 60,
+          "bearing": 160
+        },
+        "followRoute": false
+      }
+    },
+    {
+      "id": "eiger-wall",
+      "start": 6,
+      "end": 12,
+      "title": "艾格峰北壁",
+      "text": "草坡逐渐退去，岩壁与雪线进入视野。",
+      "locationId": "eiger",
+      "camera": {
+        "from": {
+          "center": [
+            8.002,
+            46.585
+          ],
+          "zoom": 12.8,
+          "pitch": 60,
+          "bearing": 160
+        },
+        "to": {
+          "center": [
+            8.002,
+            46.568
+          ],
+          "zoom": 12.85,
+          "pitch": 60,
+          "bearing": 195
+        },
+        "followRoute": false
+      }
+    },
+    {
+      "id": "high-saddle",
+      "start": 12,
+      "end": 18,
+      "title": "穿过高山山坳",
+      "text": "在僧侣峰与少女峰之间，俯瞰冰川源头。",
+      "locationId": "jungfraujoch",
+      "camera": {
+        "from": {
+          "center": [
+            8.002,
+            46.568
+          ],
+          "zoom": 12.85,
+          "pitch": 60,
+          "bearing": 195
+        },
+        "to": {
+          "center": [
+            7.985,
+            46.552
+          ],
+          "zoom": 13.05,
+          "pitch": 60,
+          "bearing": 215
+        },
+        "followRoute": false
+      }
+    },
+    {
+      "id": "glacier",
+      "start": 18,
+      "end": 24,
+      "title": "冰川与群峰",
+      "text": "镜头缓缓展开，留下雪峰与冰川的全景。",
+      "locationId": "jungfrau",
+      "camera": {
+        "from": {
+          "center": [
+            7.985,
+            46.552
+          ],
+          "zoom": 13.05,
+          "pitch": 60,
+          "bearing": 215
+        },
+        "to": {
+          "center": [
+            7.98,
+            46.54
+          ],
+          "zoom": 12.65,
+          "pitch": 58,
+          "bearing": 210
+        },
+        "followRoute": false
+      }
+    }
+  ]
+}

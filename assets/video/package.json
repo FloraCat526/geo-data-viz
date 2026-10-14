@@ -1,0 +1,20 @@
+{
+  "name": "geo-data-viz-scene-video",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "postrender": "node scripts/record-render.mjs",
+    "studio": "remotion studio src/index.jsx",
+    "render": "remotion render src/index.jsx GeoScene out/story.mp4 --gl=angle --concurrency=1 --codec=h264",
+    "still": "remotion still src/index.jsx GeoScene out/poster.png --gl=angle"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.534",
+    "remotion": "4.0.534",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "maplibre-gl": "5.24.0"
+  },
+  "engines": {"node": ">=20"}
+}

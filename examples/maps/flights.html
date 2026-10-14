@@ -1,0 +1,24 @@
+<!doctype html><!--
+MIT License
+
+Copyright (c) 2026 FloraCat526
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+--><html data-demo-kind="extended" lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>新加坡历史航空飞线</title><link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.css"><link rel="stylesheet" href="../assets/extended.css"><script src="https://unpkg.com/maplibre-gl@5.24.0/dist/maplibre-gl.js"></script><script src="https://unpkg.com/deck.gl@9.1.14/dist.min.js"></script><link rel="stylesheet" href="../assets/demo-panels.css"></head><body><div id="map"></div><section class="panel"><button id="collapse">收起</button><h1>新加坡历史航空飞线</h1><div class="body"><p>125 条历史连接 · 2014 年航线数据</p><div id="count"></div><div class="controls" id="modes"></div><button id="pause">暂停动画</button><div id="legend">颜色区分目的地洲，线与终点同色；白点为樟宜机场。点击图例筛选、终点查看机场。流光表示方向；弧线高度为视觉示意，非实际航迹或飞行高度。</div><p id="status" role="status">正在加载地图…</p><div id="detail"></div><div class="foot">OpenFlights · ODbL 1.0 / DbCL 1.0<br><a href="../SOURCES.md">来源与口径</a> · <a href="../data/flights.json" download>下载数据</a></div></div></section><script id="config" type="application/json">{"id": "flights", "modes": ["\u98de\u7ebf"], "center": [95, 15], "zoom": 2}</script><script type="module" src="../assets/extended.js"></script></body></html>
