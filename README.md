@@ -89,7 +89,7 @@ npx @floracat/geo-data-viz@latest install --dir ~/.claude/skills
 npx @floracat/geo-data-viz@latest install --dir /path/to/skills
 ```
 
-> npm 安装的是已发布版本，可能落后于本 README 所描述的源码能力。要体验仓库当前的免 Key、主题与交互功能，请在克隆后的仓库根目录运行 `node bin/geo-data-viz.mjs install`；Claude Code 等宿主沿用上面的 `--dir` 参数。已有安装需加 `--force`，安装器会先备份旧版本。
+> 已有安装可在对应安装命令后加 `--force` 更新，安装器会先备份旧版本。需要使用仓库中尚未发布的改动时，可在克隆后的仓库根目录运行 `node bin/geo-data-viz.mjs install --force`；其他宿主沿用对应的 `--dir` 参数。案例运行命令仅用于 GitHub 源码，案例网站不随 npm 包安装。
 
 安装后若 Agent 未识别 Skill，重启或重新加载技能。安装器只复制 Skill 文件；数据分析另需 Python 3.10+，Excel 的可选依赖见下方说明。
 

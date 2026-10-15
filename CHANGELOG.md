@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 — 2026-10-15
+
+- Add independent Globe.GL flight, choropleth and event-spike components with an HTML generator.
+- Add itinerary, story timeline and scene narrative components, with optional Remotion video-project generation.
+- Provide 13 flat-map visualization components through a shared selection API, including glow, radar and hexagon effects.
+- Include shared basemap configuration for authorized imagery and terrain, plus MapTiler, Cesium and static-map scene targets.
 
 - Match exact CRS identifiers and standard named CRS declarations; reject lookalike codes.
 - Share heatmap density stops with legends; distinguish count and weighted density.
@@ -20,4 +25,4 @@
 - Graphical size/color/density legends with fixed full-data scales. Native position marks keep very small proportional bubbles discoverable; point selection survives theme reload.
 - Shared page semantics and regression fixes.
 
-These changes are local source work until a versioned release is published. Browser acceptance and remaining provider/host checks are recorded in references/verification.md.
+Browser acceptance and remaining provider/host checks are recorded in references/verification.md.
