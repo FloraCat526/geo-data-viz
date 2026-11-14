@@ -50,7 +50,9 @@ MapLibre 与 Mapbox 对已支持的效果分别加载各自 SDK 和底图，并�
 
 旅行日期浏览和事件时间轴分别使用已有旅游/故事生成器。需要镜头、章节、媒体和路线同步时，可用 `scripts/prepare_scene.py` 将已有规范化故事/旅游数据生成可编辑计划，或按[场景镜头](scene-narrative.md)直接编排 `scene.json`，再调用 `scripts/build_scene_html.py`。它按目标创建真实地图 SDK、Cesium Viewer 或具有地理范围及投影的静态图片场景。转换默认不补路线；只有明确要求示意连接才启用 `--schematic-links`。
 
-用户明确要求 MP4 时，按[视频输出](video-export.md)用 `scripts/build_scene_video.py` 生成可选 Remotion 工程，并执行其实际渲染命令。工程和 HTML 可复用同一场景数据；工程生成不等于视频导出成功。保留媒体和地图资源许可，分享源工程前清除浏览器凭据；视频画面保留地图服务要求的可见署名。
+用户要求短片或动画叙事时，复杂时间数据和定制视觉优先用[原生 Remotion](remotion-narratives.md)及 `create_remotion_project.py`；已有 `scene.json` 用 `build_scene_video.py` 复用并实际渲染。scene 工程与 HTML 共享数据和地图采样，字幕/卡片布局并非自动像素一致；要求一致时还需对齐布局并比对同时间截图。工程生成不等于视频导出成功。保留媒体与地图许可，分享源工程前清除浏览器凭据；画面保留可见署名。
+
+scene 入口的 Mapbox 配置使用 `{"token":"<已授权浏览器 public Token>"}` 或 `{"mapbox":{"token":"..."}}`，与上方平面生成器的 `mapboxToken` 字段不同。环境变量只有显式传入 `--token-env NAME` 才读取，不自动尝试常见变量名。
 
 ## Mapbox 兼容入口
 

@@ -38,6 +38,9 @@ async function listFiles() {
   await walk('assets/components', '.mjs');
   for (const rel of ['package.json','remotion.config.ts','tsconfig.json','gitignore.txt',
                     'src/index.jsx','src/SceneComposition.jsx','scripts/record-render.mjs']) files.push(join('assets/video',rel));
+  for (const rel of ['package.json','remotion.config.ts','tsconfig.json','gitignore.txt',
+                    'src/index.jsx','src/Composition.jsx','src/MapStage.jsx','src/timing.mjs',
+                    'scripts/record-render.mjs']) files.push(join('assets/remotion',rel));
   return files.sort();
 }
 async function main(args) {

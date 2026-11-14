@@ -1,0 +1,8 @@
+node_modules/
+out/
+build/
+.env
+.env.*
+src/data.json
+src/background.json
+*.log

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- Add a native Remotion + MapLibre project generator for GeoJSON overviews, observed tracks, and timed event playback. Keep the existing scene JSON video workflow and ship both templates with the installer.
+- Improve globe hover, scale legends, mobile layout, and reduced-motion controls.
+- Allow public data research on explicit request, with source and license tracking. Scene tools now require an explicit provider configuration or `--token-env` for credentials.
+
 ## 0.3.0 — 2026-10-15
 
 - Add independent Globe.GL flight, choropleth and event-spike components with an HTML generator.

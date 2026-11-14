@@ -1,6 +1,13 @@
 # 场景叙事视频输出
 
-用户明确要求地图视频、MP4 或视频工程时使用。普通 HTML 地图无需 Node/Remotion 依赖。先按[场景镜头](scene-narrative.md)形成用户地点、路径、章节、相机和媒体的 `scene.json`；视频与 HTML 复用这份数据，业务几何不因镜头编排改变。
+用户要求地图短片、电影感动画、MP4 或视频工程时使用；普通交互 HTML 不依赖 Node/Remotion。影片任务在环境允许时应完成实际渲染、检查与交付，不能以脚手架代替成片。
+
+| 任务 | 工程入口 |
+| --- | --- |
+| 复杂时间数据、定制镜头/图表/字幕 | [原生 Remotion 叙事](remotion-narratives.md) → `create_remotion_project.py` → 编辑 `Composition.jsx` |
+| 现有章节/地点/路线场景复用 | [场景镜头](scene-narrative.md) → `build_scene_video.py`，HTML 和视频共用 `scene.json` |
+
+下文生成命令是第二条兼容路径；两条路径共用安装、媒体授权和验收原则。
 
 已有规范化 `story.json` 或 `itinerary.json` 可先运行 `prepare_scene.py story.json --out scene.json`。默认保留真实路径并只为缺路径的地点编排镜头；明确要求示意连接才加 `--schematic-links`。在输出场景中调整章节、`camera.followRoute`、图片和音频，再生成视频工程；完整转换示例见[从已有故事或行程生成场景](scene-narrative.md#从已有故事或行程生成场景)。
 
@@ -19,6 +26,7 @@ python3 "SKILL_DIR/scripts/build_scene_video.py" "WORK/scene.json" \
 
 ```bash
 npm install
+npx remotion browser ensure
 npm run studio
 npm run render
 ```
@@ -48,6 +56,8 @@ python3 "SKILL_DIR/scripts/build_scene_video.py" "WORK/scene.json" \
 当前目标为 MapLibre、Mapbox、MapTiler、Cesium 和静态地图。高德、百度、腾讯、Google 的专用 Remotion 适配尚未封装；不能因有对应 HTML 能力文档就宣称可直接视频导出。资源加载与源登记、当前帧可截图、完整 MP4、真实图商验收分别记录。[Remotion 地图动画实现](https://www.remotion.dev/docs/maps)、[官方 MapLibre 示例](https://github.com/remotion-dev/maplibre-example)。
 
 ## 验收与交付
+
+`useDelayRender` 只阻止导出捕获，不控制 Studio/Player 播放。原生模板的 `MapStage` 另用 `useBufferState().delayPlayback()` 等待地图就绪再解除；已有 scene 模板的导出等待不能直接当作网页 Player 缓冲。网页 Player 与转场的接入边界见[原生叙事](remotion-narratives.md)。
 
 `video-manifest.json` 初始为 `pending-render`；成功产生非空 MP4 后为 `rendered-awaiting-visual-review`。还需查看实际视频的开头、中段、末尾、章节切点和音画同步，确认路线揭示、地点标签、影像/DEM、字幕图片与地图署名正确。代码测试、渲染退出码或文件存在不能单独替代视觉验收。
 

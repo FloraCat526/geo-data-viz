@@ -2,6 +2,10 @@
 
 用户需要地点解说、旅行回顾、历史故事、镜头跟随或地理叙事视频时使用。普通地点分布和统计比较仍按[选型表](selection.md)选择数据组件；日期浏览用 `TravelItineraryLayer`，简洁事件时间轴用 `StoryTimelineLayer`。本组件把相机、路线进度、章节及媒体组织为一份可按时间采样的场景。
 
+## 与原生 Remotion 的分工
+
+本契约适合章节、地点与已提供路线在 HTML/视频间复用。`routes` 只保留 id/coordinates/kind，`routeProgress` 按几何距离推进，不保留风速、震级或逐点观测时刻；不能用它冒充业务时间轴。需要真实时间轨迹、事件出现/累计、动态指标或定制字幕转场时，直接使用[原生 Remotion Composition](remotion-narratives.md)，保持原始字段和时间域。已有 `scene.json` 仍可用 `build_scene_video.py`，不需要迁移。
+
 ## 场景数据
 
 输入为 `scene.json`，坐标是已核实 WGS84 `[经度,纬度]`。凭据单独放运行配置，不放场景数据。

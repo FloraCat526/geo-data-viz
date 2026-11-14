@@ -2,6 +2,8 @@
 // these are not MapLibre or provider-native layers.
 export const GLOBE_VERSION = '2.46.2';
 export const GLOBE_TEXTURE = 'https://cdn.jsdelivr.net/npm/three-globe@2.45.2/example/img/earth-night.jpg';
+export const GLOBE_POPULATION_COLORS = Object.freeze(['#345d79','#f1c871','#ee7255']);
+export const GLOBE_SPIKE_COLORS = Object.freeze(['#90ddf5','#ffad7b','#ff5d67']);
 
 const finite = value => typeof value === 'number' && Number.isFinite(value);
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
@@ -57,11 +59,22 @@ export function normalizeGlobeSpikes(input) {
 
 export function createGlobe(host,{GlobeCtor=globalThis.Globe,texture=GLOBE_TEXTURE,center={lat:16,lng:12,altitude:2.1},motion=true}={}) {
   if(!host || typeof GlobeCtor!=='function') throw Error('Globe.GL is unavailable');
-  const globe=new GlobeCtor(host,{animateIn:motion,waitForGlobeReady:true});
-  globe.backgroundColor('#0b1020').globeImageUrl(texture).showAtmosphere(true).atmosphereColor('#3b99d4').atmosphereAltitude(.16);
+  const globe=new GlobeCtor(host,{animateIn:motion,waitForGlobeReady:true,rendererConfig:{alpha:true,antialias:true}});
+  globe.backgroundColor('rgba(0,0,0,0)').globeImageUrl(texture).showAtmosphere(true).atmosphereColor('#599dc5').atmosphereAltitude(.105);
+  // A restrained specular edge preserves the night texture and the data colors.
+  const material=globe.globeMaterial();
+  material.shininess=6;material.specular?.set('#17374c');
+  for(const light of globe.lights()){
+    if(light.isAmbientLight)light.intensity*=1.1;
+    else if(light.isDirectionalLight)light.intensity*=.9;
+  }
+  // Bound the drawing buffer on high-density screens without reducing data.
+  globe.renderer().setPixelRatio(Math.min(globalThis.devicePixelRatio||1,1.75));
   globe.pointOfView(center,0);
   globe.controls().autoRotate=motion;
-  globe.controls().autoRotateSpeed=.22;
+  globe.controls().autoRotateSpeed=.16;
+  globe.controls().enableDamping=true;
+  globe.controls().dampingFactor=.08;
   return globe;
 }
 
@@ -87,14 +100,19 @@ export class GlobeFlightLayer extends GlobeLayer {
     const endpoints=new Map();
     for(const row of rows) endpoints.set(row.target.join(','),{lat:row.target[1],lng:row.target[0],label:row.label,category:row.category,row});
     if(origin) endpoints.set(origin.join(','),{lat:origin[1],lng:origin[0],label:'Origin',category:'Origin'});
+    this.hoveredId=null;
+    this.arcColor=d=>alpha(this.categoryColors.get(d.row.category)??ROUTE_COLORS.Other,
+      this.hoveredId&&d.row.id!==this.hoveredId ? .1 : d.flow ? .98 : this.hoveredId ? .85 : .4);
+    this.pointColor=d=>d.category==='Origin' ? '#fff4c2' : this.hoveredId===d.row?.id ? '#ffffff' : this.categoryColors.get(d.category)??ROUTE_COLORS.Other;
+    const highlight=id=>{if(this.hoveredId===id)return;this.hoveredId=id;this.globe.arcColor(this.arcColor).pointColor(this.pointColor);};
     this.globe.arcStartLat(d=>d.row.source[1]).arcStartLng(d=>d.row.source[0]).arcEndLat(d=>d.row.target[1]).arcEndLng(d=>d.row.target[0])
-      .arcColor(d=>alpha(this.categoryColors.get(d.row.category)??ROUTE_COLORS.Other,d.flow ? .98 : .72))
-      .arcAltitudeAutoScale(.38).arcStroke(d=>d.flow ? .075 : .12).arcDashLength(d=>d.flow ? .17 : 1).arcDashGap(d=>d.flow ? .83 : 0)
-      .arcLabel(d=>escapeHtml(`${d.row.label} · ${d.row.category}`)).onArcClick(d=>this.onPick(d.row))
+      .arcColor(this.arcColor).arcCurveResolution(48).arcCircularResolution(6)
+      .arcAltitudeAutoScale(.38).arcStroke(d=>d.flow ? .09 : .105).arcDashLength(d=>d.flow ? .17 : 1).arcDashGap(d=>d.flow ? .83 : 0).arcDashInitialGap(d=>d.flow?d.phase:0)
+      .arcLabel(d=>escapeHtml(`${d.row.label} · ${d.row.category}`)).onArcClick(d=>this.onPick(d.row)).onArcHover(d=>highlight(d?.row?.id??null))
       .pointsData([...endpoints.values()]).pointLat(d=>d.lat).pointLng(d=>d.lng).pointAltitude(.002)
-      .pointRadius(d=>d.category==='Origin' ? .38 : .23).pointColor(d=>d.category==='Origin' ? '#fff4c2' : this.categoryColors.get(d.category)??ROUTE_COLORS.Other)
-      .pointLabel(d=>escapeHtml(d.label)).onPointClick(d=>this.onPick(d.row??{label:d.label,category:d.category})).pointsTransitionDuration(this.motion?800:0)
-      .arcsData(rows.flatMap(row=>[{row,flow:false},{row,flow:true}]));
+      .pointRadius(d=>d.category==='Origin' ? .42 : .25).pointResolution(10).pointColor(this.pointColor)
+      .pointLabel(d=>escapeHtml(d.label)).onPointClick(d=>this.onPick(d.row??{label:d.label,category:d.category})).onPointHover(d=>highlight(d?.row?.id??null)).pointsTransitionDuration(this.motion?650:0)
+      .arcsData(rows.flatMap((row,index)=>[{row,flow:false,phase:0},{row,flow:true,phase:(index*.61803398875)%1}]));
     this.updateMotion();return this;
   }
   updateMotion(){this.globe.arcDashAnimateTime(d=>d.flow&&!this.paused?3000:0);}
@@ -105,12 +123,15 @@ export class GlobeChoroplethLayer extends GlobeLayer {
     const rows=normalizeGlobeCountries(input);this.count=rows.length;
     const values=rows.map(d=>d.value).filter(v=>finite(v)&&v>0);
     const lo=values.length?Math.log10(1+Math.min(...values)):0,hi=values.length?Math.log10(1+Math.max(...values)):1;
+    this.valueRange={min:values.length?Math.min(...values):0,max:values.length?Math.max(...values):0};
     const ratio=d=>(Math.log10(1+Math.max(0,d.value))-lo)/(hi-lo||1);
-    this.globe.polygonGeoJsonGeometry(d=>d.geometry).polygonAltitude(.004).polygonStrokeColor('#0a2331')
-      .polygonCapColor(d=>{if(d.value===null)return '#26384f';const x=ratio(d);return x<.7?mix('#496b83','#f4be65',x/.7):mix('#f4be65','#e75d40',(x-.7)/.3)})
-      .polygonSideColor(d=>d.value===null ? '#1c293d' : mix('#315c72','#bc674f',ratio(d)))
+    let hovered=null;
+    this.globe.polygonGeoJsonGeometry(d=>d.geometry).polygonAltitude(.006).polygonStrokeColor('#17384e')
+      .polygonCapColor(d=>{if(d.value===null)return '#26384f';const x=ratio(d);return x<.7?mix(GLOBE_POPULATION_COLORS[0],GLOBE_POPULATION_COLORS[1],x/.7):mix(GLOBE_POPULATION_COLORS[1],GLOBE_POPULATION_COLORS[2],(x-.7)/.3)})
+      .polygonSideColor(d=>d.value===null ? '#1c293d' : mix('#25445c','#a6533c',ratio(d)))
       .polygonLabel(d=>escapeHtml(`${d.label}: ${d.value===null?'无数据':d.value.toLocaleString()}`))
-      .onPolygonClick(d=>this.onPick(d)).polygonsTransitionDuration(this.motion?850:0).polygonsData(rows);
+      .onPolygonClick(d=>this.onPick(d)).onPolygonHover(d=>{if(hovered===d)return;hovered=d;this.globe.polygonStrokeColor(row=>row===hovered?'#eff8ff':'#17384e');})
+      .polygonsTransitionDuration(this.motion?650:0).polygonsData(rows);
     return this;
   }
 }
@@ -125,10 +146,13 @@ export class GlobeSpikeLayer extends GlobeLayer {
     this.minValue=this.bounds.min??Math.min(...rows.map(d=>d.value));this.maxValue=this.bounds.max??Math.max(...rows.map(d=>d.value));
     if(this.maxValue<=this.minValue){const delta=Math.max(1,Math.abs(this.minValue)*.1);this.minValue-=delta;this.maxValue+=delta;}
     const span=this.maxValue-this.minValue,ratio=d=>Math.max(0,Math.min(1,(d.value-this.minValue)/span));
+    let hovered=null;
+    const color=d=>{if(d===hovered)return '#fff5df';const x=ratio(d);return x<.55?mix(GLOBE_SPIKE_COLORS[0],GLOBE_SPIKE_COLORS[1],x/.55):mix(GLOBE_SPIKE_COLORS[1],GLOBE_SPIKE_COLORS[2],(x-.55)/.45);};
     this.globe.pointLat(d=>d.lat).pointLng(d=>d.lng).pointAltitude(d=>.014+Math.pow(ratio(d),1.4)*.16)
-      .pointRadius(d=>.17+.1*ratio(d)).pointColor(d=>{const x=ratio(d);return x<.55?mix('#90ddf5','#ffad7b',x/.55):mix('#ffad7b','#ff5d67',(x-.55)/.45)})
+      .pointRadius(d=>.17+.1*ratio(d)).pointResolution(8).pointColor(color)
       .pointLabel(d=>escapeHtml(`${d.label} · ${d.value.toLocaleString(undefined,{maximumFractionDigits:2})}${this.unit?` ${this.unit}`:''}`)).onPointClick(d=>this.onPick(d))
-      .pointsTransitionDuration(this.motion?800:0).pointsData(rows);
+      .onPointHover(d=>{if(hovered===d)return;hovered=d;this.globe.pointColor(color);})
+      .pointsTransitionDuration(this.motion?650:0).pointsData(rows);
     return this;
   }
 }

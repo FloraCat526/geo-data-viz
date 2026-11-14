@@ -23,7 +23,16 @@
     "assets/video/tsconfig.json",
     "assets/video/gitignore.txt",
     "assets/video/src/*.jsx",
-    "assets/video/scripts/*.mjs"
+    "assets/video/scripts/*.mjs",
+    "assets/remotion/package.json",
+    "assets/remotion/remotion.config.ts",
+    "assets/remotion/tsconfig.json",
+    "assets/remotion/gitignore.txt",
+    "assets/remotion/src/index.jsx",
+    "assets/remotion/src/Composition.jsx",
+    "assets/remotion/src/MapStage.jsx",
+    "assets/remotion/src/timing.mjs",
+    "assets/remotion/scripts/record-render.mjs"
   ],
   "engines": {
     "node": ">=20"

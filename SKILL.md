@@ -1,11 +1,11 @@
 ---
 name: geo-data-viz
-description: Analyze geographic CSV, Excel, JSON, or GeoJSON and generate runnable HTML maps, interactive globes, or geographic narratives. Use for geographic data visualization and user-requested map storytelling or video. Default to MapLibre + OpenFreeMap; honor explicit providers and authorized imagery or terrain resources.
+description: Analyze geographic CSV, Excel, JSON, or GeoJSON and generate runnable HTML maps, interactive globes, or Remotion map narratives. Use for geographic visualization, interactive map stories, and cinematic map animation or video. Default to MapLibre + OpenFreeMap; honor explicit providers and authorized imagery or terrain resources.
 ---
 
 # 地理数据可视化
 
-在 Agent 对话中分析用户附件、选择合适的表达并交付这份数据的 HTML 地图。用户要求场景叙事或视频时，可编排章节、镜头与路线并输出 HTML 或 Remotion 视频工程。默认生成具体作品；只有用户要求时才开发上传平台或加入多图商切换。
+在 Agent 对话中分析数据并生成具体作品。交互浏览交付 HTML；用户要求地图短片、动画叙事或视频时，直接用 Remotion 编排和渲染，并交付可播放影片与可编辑工程。只有用户要求时才开发上传平台或加入多图商切换。
 
 能力只按以下三类组织。平面效果都作为平等、可独立选择的可视化组件；Agent 按问题和字段选组件，底层绘制方式只是实现细节。示例中的停车方格和图标点是按数据制作的页面效果，不等于另有通用组件 API。
 
@@ -15,7 +15,7 @@ description: Analyze geographic CSV, Excel, JSON, or GeoJSON and generate runnab
 | 场景叙事组件 | 旅游规划、故事时间轴、场景镜头叙事；章节、镜头、路线揭示、地点讲解、图片、字幕与已有旁白；可选静态地图、MapTiler、Cesium 或 Remotion 视频输出 |
 | 地球模式组件 | 球面飞线、全球区域设色、事件指标柱 |
 
-可视化的数据仅来自用户在本任务提供的文件或明确提供的内容。Skill 不提供算路、地理编码或外部数据补全服务；地图 SDK 与底图资源的加载不等于补充用户数据。缺少坐标、路径几何或区域边界时，先做现有数据能够支持的展示，并说明缺项；不能自动请求第三方服务生成这些数据。
+默认使用用户提供的数据。用户明确要求自行找数据时，可在授权范围内检索并保存公开源数据，同时保留来源、获取时间、许可、筛选口径与原始快照。地图 SDK/底图加载不等于业务数据获取；不擅自调用算路、地理编码或补造缺失轨迹。缺少坐标、路径或区域边界时，先完成现有数据支持的部分。
 
 ## 运行条件
 
@@ -32,7 +32,7 @@ description: Analyze geographic CSV, Excel, JSON, or GeoJSON and generate runnab
 
 - 原始 CSV/Excel/JSON/GeoJSON：运行分析脚本，读取摘要，再按业务含义显式绑定指标；数值候选不等于已选择指标。
 - 已含稳定字符串 ID、`metadata.dataCrs` 和 `properties.__viz` 的 FeatureCollection：按 [数据契约](references/data-contract.md#reuse-normalized) 检查现有绑定是否符合本次目标。符合时直接交给生成器校验并复用，不重复运行 profiler。需要换指标时从原始字段显式重新绑定，保留原文件。
-- 只有地址、OD 表、轨迹、多表或区域编码：按需读 [数据转换](references/transforms.md)，仅对用户提供的数据完成必要关联后再渲染；不编造或从外部补充坐标、路线、边界。
+- 只有地址、OD 表、轨迹、多表或区域编码：按需读 [数据转换](references/transforms.md)，对用户提供或明确授权获取的数据完成必要关联后再渲染；不编造坐标、路线、边界，也不擅自调用外部服务补齐。
 
 原始输入示例：
 
@@ -73,7 +73,10 @@ python3 "SKILL_DIR/scripts/profile_geo.py" "locations.csv" --out-dir "WORK/profi
 |---|---|
 | 多日旅游行程、日期切换与站点讲解 | 原始站点表先用 `scripts/prepare_itinerary.py` 核实字段、顺序和路径关联，再用 `scripts/build_itinerary_html.py`；[旅游规划组件](references/travel-itinerary.md) |
 | 故事讲述、历史事件或出征地点的章节时间轴 | 原始点位表先用 `scripts/prepare_story.py` 明确事件顺序与坐标，再用 `scripts/build_story_html.py`；[故事时间轴组件](references/story-timeline.md) |
-| 镜头跟随、地理解说、山地/三维飞越或视频故事 | 已有规范化故事/旅游数据可先用 `scripts/prepare_scene.py`，或将已提供的地点、路径与章节编排为 `scene.json`，再用 `scripts/build_scene_html.py`；[场景镜头组件](references/scene-narrative.md)。用户明确要求 MP4 时再用 `scripts/build_scene_video.py`，见[视频输出](references/video-export.md) |
+| 交互式镜头故事、既有章节/路线复用 | `prepare_scene.py` → `build_scene_html.py`；同一 `scene.json` 需要视频时用 `build_scene_video.py`。[场景镜头组件](references/scene-narrative.md) |
+| 电影感短片、真实时间轨迹、事件回放、定制图表/字幕/转场 | 优先原生 Remotion Composition；`create_remotion_project.py` 提供保留 GeoJSON 属性的总览、轨迹、事件起步工程，再按任务完成视觉编排。[原生 Remotion 叙事](references/remotion-narratives.md)；[导出与验收](references/video-export.md) |
+
+Remotion 负责帧时间、编排、媒体和视频渲染；地图引擎负责投影、地理图层和镜头。不要再造一套通用视频时间轴，也不要把带风速、震级、观测时刻的原始数据强塞进精简 `scene.json`。用户的“做地图短片/电影感示例”已表达影片意图，无需等其逐字指定 MP4；普通交互地图不增加视频依赖。
 
 ### 地球模式组件
 
@@ -97,13 +100,13 @@ python3 "SKILL_DIR/scripts/build_visual_html.py" "WORK/profile-bound/normalized.
 - 原始坐标保留，转换在适配边界生成副本。统计、稳定 ID、分类颜色和数值域保持一致；多图商切换仅按用户要求实现。
 - 浏览器 Key 仅接入本地作品配置，分享前移除；服务端 secret 不进前端。Key 只用于本次选定图商的地图可视化，不用于请求地理编码、算路或外部业务数据。上传文本按数据安全渲染。
 - 对大数据按实测选择聚合、Worker 或切片，不静默截断。动画提供暂停并尊重 reduced-motion；保留必要的数据许可和地图版权标识。
-- 场景中的路线、地点及业务时间仍来自用户数据；镜头运动和章节时长只是叙事编排。无真实路径时标为示意连接；静态地图需地理范围才可定位叠加。三维飞越需真实 DEM/3D Tiles 资源，不用插值伪造地形。字幕、图片和旁白使用用户提供或明确授权的内容。
+- 场景中的路线、地点及业务时间仍来自已核实的源数据；镜头运动和章节时长只是叙事编排。无真实路径时标为示意连接；静态地图需地理范围才可定位叠加。三维飞越需真实 DEM/3D Tiles 资源，不用插值伪造地形。字幕、图片和旁白使用用户提供或明确授权的内容。
 - 中国地图任务遵循适用地图合规要求；宿主提供内置地图合规 Skill 时按宿主方式读取，仅在具体实现受影响且信息不足时澄清。
 
 ## 4. 验证与交付
 
 在浏览器检查真实底图、已知位置、数据层、图例、缩放、筛选、拾取和目标屏幕布局；检查动画暂停、空结果及资源清理。图层注册或 SDK 加载成功不等于画面通过。无浏览器或缺真实 Key 时明确标注尚未验收的部分，不假称通过。
 
-视频还需检查实际渲染帧、路线首尾、章节切点与音画同步。只生成工程不称为 MP4 已导出；地图 Key、影像和 DEM 的运行验收与代码测试分别记录。
+视频还需检查实际导出的开头/中段/结尾、章节切点、源时间边界和音画同步；预览可拖动不代表导出帧已同步。只生成工程不称为 MP4 已导出；地图 Key、影像和 DEM 的运行验收与代码测试分别记录。
 
 按 [生成与验收](references/generation.md) 记录实际结果，交付作品链接、源文件和启动方式，简述数据发现与效果选择。没有发布要求时不上传用户数据。组件和图商的已知限制见 [验证边界](references/verification.md)；仓库历史测试不代表本次作品或所有宿主均已验收。

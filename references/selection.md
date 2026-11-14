@@ -45,6 +45,7 @@
 | 历史故事、出征或事件如何按章节在地图上展开 | WGS84 事件点、稳定 ID、明确顺序；日期和叙述可选；真实路段另需 LineString | 不聚合，保持叙事顺序；动画按章节推进 | `prepare_story.py` → `StoryTimelineLayer` / `build_story_html.py`；[故事时间轴](story-timeline.md) | 缺路径只画虚线示意；章节播放不等于真实时刻、真实路线或行进速度 |
 | 地理故事怎样通过镜头、地点和路线进行讲解 | WGS84 地点/已提供路线＋章节文本；可选图片、已有旁白；镜头帧段独立于业务时间 | 不聚合；按章节组织内容与相机起止状态 | `SceneNarrativeViz` / `build_scene_html.py`；明确要视频时 `build_scene_video.py`；[场景镜头](scene-narrative.md) | 不调用 Directions；镜头轨迹不能当作业务轨迹，只有地点时路线标为示意 |
 | 在山地或三维城市中跟随用户路线飞越 | 已提供路线与地点；另有可用 DEM/影像/3D Tiles 和授权配置 | 保留用户几何，叙事高度单独配置 | 地形底图＋`SceneNarrativeViz`；三维资产用 Cesium 场景目标；[底图](basemaps.md)、[Cesium](capabilities/cesium.md) | 缺地形或三维资源不伪造；影像纹理不等于真实地形，指标拉伸不等于地面高程 |
+| 按实际观测时间追踪移动对象，或逐条回放事件 | WGS84 Point 与明确的源时间、指标和单位 | 仅位置插值，指标取最近观测；事件按源时间累计 | `create_remotion_project.py --mode track` 或 `--mode events`；[原生 Remotion](remotion-narratives.md) | 不用几何距离进度冒充业务时间，装饰光圈不表示影响范围 |
 | 基于一张已有地图图片讲解地点与路线 | 用户提供图片＋WGS84 `geoBounds`＋地点/路线，或不定位的纯图解 | 不聚合；在明确地理范围内映射位置 | `SceneNarrativeViz` 的 `static` 目标；[静态场景](scene-narrative.md) | 本组件需地图图片覆盖范围；一般海报/非地理插画不适用，不把任意图片自动当地图 |
 | 按真实时间查看车辆/人员移动 | 实体 ID＋坐标＋时间戳，采样顺序明确 | 按实体、时间排序，处理缺口并分段 | **需任务实现**：时间戳轨迹播放；详见转换配方与所选图商能力 | 普通线只呈现路径形状，不是已封装的真实轨迹回放组件 |
 | 比较行政区指标或比例 | Polygon / MultiPolygon＋稳定地域编码＋指标；边界年份匹配 | 按区域关联；比率上卷用 sum(分子)/sum(分母) | `fill, colorBy: value` 组件 | 只有名称不造边界；不得平均百分比代替加权比率；统计缺失与零区分 |

@@ -199,15 +199,8 @@ def resolve_scene_config(provider, config_path=None, token_env=None):
         if not value:
             raise ValueError(f'Token environment variable {token_env} is empty')
         config[token_field] = value
-    elif token_field and not config.get(token_field):
-        names = {'mapbox': ('MAPBOX_ACCESS_TOKEN', 'MAPBOX_TOKEN'), 'maptiler': ('MAPTILER_API_KEY', 'MAPTILER_KEY'),
-                 'cesium': ('CESIUM_ION_TOKEN',)}[provider]
-        for name in names:
-            if os.environ.get(name):
-                config[token_field] = os.environ[name]
-                break
     if provider in ('mapbox', 'maptiler') and not config.get(token_field):
-        raise ValueError(f'{provider} requires an authorized {token_field} in config or environment')
+        raise ValueError(f'{provider} requires an authorized {token_field} in config or an explicit --token-env name')
     if token_field in config and (not isinstance(config[token_field], str) or not config[token_field].strip()):
         raise ValueError(f'{token_field} must be nonempty text')
     if provider == 'mapbox' and not config['token'].startswith('pk.'):

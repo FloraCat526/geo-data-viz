@@ -10,7 +10,7 @@ const asset = src => /^https?:\/\//i.test(src) ? src : staticFile(src.replace(/^
 export function SceneComposition({scene, config}) {
   const container = useRef(null);
   const frame = useCurrentFrame();
-  const {fps, durationInFrames} = useVideoConfig();
+  const {fps, durationInFrames, width, height} = useVideoConfig();
   const {delayRender, continueRender, cancelRender} = useDelayRender();
   const [initialHandle] = useState(() => delayRender('Loading scene map'));
   const initialReleased = useRef(false);
@@ -62,7 +62,7 @@ export function SceneComposition({scene, config}) {
     .map(value => value.replace(/<[^>]*>/g, '')).join(' · ');
 
   return <AbsoluteFill style={{background:'#081323', fontFamily:'Arial, "PingFang SC", sans-serif'}}>
-    <AbsoluteFill ref={container} />
+    <div ref={container} style={{position:'absolute', inset:0, width, height}} />
     <AbsoluteFill style={{pointerEvents:'none', background:'linear-gradient(90deg,rgba(5,15,28,.68),transparent 65%)'}} />
     <div style={{position:'absolute', left:58, top:58, width:480, color:'#fff',
       opacity:enter, transform:`translateY(${(1-enter)*12}px)`}}>

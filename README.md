@@ -15,7 +15,7 @@
   <a href="https://www.npmjs.com/package/@floracat/geo-data-viz">npm</a>
 </p>
 
-Geo Data Viz 是用于 **Codex、Claude Code 等 Agent 的地理数据可视化 Skill**。上传 CSV、Excel、JSON 或 GeoJSON，告诉 Agent 你想观察什么，它会检查数据、选择合适的地图表达，并生成可运行的 HTML 文件。需要讲述地点与路线故事时，可编排章节、镜头和媒体，按需生成 Remotion 视频工程并导出 MP4。
+Geo Data Viz 是用于 **Codex、Claude Code 等 Agent 的地理数据可视化 Skill**。上传 CSV、Excel、JSON 或 GeoJSON，告诉 Agent 你想观察什么，它会检查数据、选择合适的地图表达，并生成可运行的 HTML 文件。做地图短片时，可以按原始观测时间播放轨迹或回放事件，生成可编辑的 Remotion 工程并导出 MP4。
 
 未指定地图服务且没有已授权 Key 时，默认使用 **MapLibre + OpenFreeMap**，无需申请 Key。指定 Mapbox 等服务时，沿用对应图商及已授权配置。
 
@@ -23,7 +23,7 @@ Geo Data Viz 是用于 **Codex、Claude Code 等 Agent 的地理数据可视化 
 
 - **先理解数据**：识别地理字段、坐标系、指标和空间分布，检查缺失值与异常值。
 - **按问题选择表达**：用气泡比较规模，用热力观察密度，用路线呈现网络，用区域设色或 3D 展示空间差异；全球数据可选择球面飞线、区域设色与指标柱。
-- **只处理用户提供的数据**：不会调用算路、地理编码或外部业务数据补全接口；缺少路径几何时仅展示站点顺序或明确标注的连接示意。
+- **保留数据来源**：默认使用你提供的数据。明确要求查找公开数据时，保留来源、许可和原始快照；不擅自算路或地理编码。缺少路径几何时仅展示站点顺序或明确标注的连接示意。
 - **交付可使用的结果**：生成独立 HTML，按任务加入效果切换、搜索、筛选、悬停详情，以及深色／浅色主题。
 - **让背景服务于表达**：地图数据组件可配置矢量、影像或真实地形底图；影像与 DEM 使用你提供或已授权的资源，默认 OpenFreeMap 仍无需 Key。
 - **讲述空间里的故事**：用日期浏览行程，用时间轴展开事件，或用镜头、路线揭示、地点标注、图片、字幕和已有旁白制作地理解说；静态地图、MapTiler 和 Cesium 三维飞越都归入场景叙事。
@@ -89,7 +89,7 @@ npx @floracat/geo-data-viz@latest install --dir ~/.claude/skills
 npx @floracat/geo-data-viz@latest install --dir /path/to/skills
 ```
 
-> 已有安装可在对应安装命令后加 `--force` 更新，安装器会先备份旧版本。需要使用仓库中尚未发布的改动时，可在克隆后的仓库根目录运行 `node bin/geo-data-viz.mjs install --force`；其他宿主沿用对应的 `--dir` 参数。案例运行命令仅用于 GitHub 源码，案例网站不随 npm 包安装。
+> 原生 Remotion 叙事目前在 GitHub 源码中，尚未包含在 npm `0.3.0`。克隆后在仓库根目录运行 `node bin/geo-data-viz.mjs install`；已有安装可加 `--force`，安装器会先备份旧版本。其他宿主沿用对应的 `--dir` 参数。案例网站不随 npm 包安装。
 
 安装后若 Agent 未识别 Skill，重启或重新加载技能。安装器只复制 Skill 文件；数据分析另需 Python 3.10+，Excel 的可选依赖见下方说明。
 
@@ -122,7 +122,7 @@ Claude Code 可通过 `/geo-data-viz` 调用；其他 Agent 按宿主的 Skill �
 生成可播放的 HTML；再生成 Remotion 工程并导出 30 FPS 的 MP4。
 ```
 
-普通 HTML 无需 Remotion。视频工具先生成独立工程，实际导出另需 Node.js 20+、依赖和支持 WebGL 的 Chromium；图片/旁白使用已提供的文件。地图资源与视频的实际验证范围见[底图](references/basemaps.md)及[视频输出](references/video-export.md)。
+已有 `scene.json` 可以继续生成 HTML 和视频。需要按真实时间播放轨迹、回放事件或定制图表与字幕时，可用[原生 Remotion 模板](references/remotion-narratives.md)；模板默认使用 MapLibre，保留 GeoJSON 中的时间和指标字段。普通 HTML 无需 Remotion；实际导出另需 Node.js 20+、依赖和支持 WebGL 的 Chromium。详见[视频输出](references/video-export.md)。
 
 ### 3. 打开生成结果
 
@@ -210,13 +210,13 @@ python3 "$HOME/.agents/skills/geo-data-viz/scripts/profile_geo.py" \
 | 生成 HTML、配置图商与凭证 | [生成指南](references/generation.md) |
 | 配置影像、地形与高程来源 | [底图配置](references/basemaps.md) |
 | 编排章节、镜头、路线与媒体 | [场景镜头组件](references/scene-narrative.md) |
-| 生成 Remotion 工程并导出 MP4 | [视频输出](references/video-export.md) |
+| 按真实时间制作地图短片、导出 MP4 | [原生 Remotion 叙事](references/remotion-narratives.md) · [视频输出](references/video-export.md) |
 | 调整深浅主题、布局与交互 | [主题](references/themes.md) · [布局与交互](references/presentation.md) |
 | 处理轨迹、OD 与区域关联 | [数据转换](references/transforms.md) |
 | 核对效果的渲染来源 | [原生优先与补充效果](references/provider-rendering.md) |
 | 查看已验证范围与版本变化 | [验证边界](references/verification.md) · [更新日志](CHANGELOG.md) |
 
-仓库中，`scripts/` 提供数据分析、HTML 和视频工程生成入口，`references/` 提供选型和图商知识，`assets/components/visualizations.mjs` 提供平面可视化组件的统一注册表和接口，`assets/recipes/` 是组件内部复用的 SDK 图层实现，`assets/shared/` 保存颜色、图例/统计、主题和底图等公共逻辑；`assets/video/` 是可选 Remotion 模板，`examples/` 保存可运行示例。
+仓库中，`scripts/` 提供数据分析、HTML 和视频工程生成入口，`references/` 提供选型和图商知识，`assets/components/visualizations.mjs` 提供平面可视化组件的统一注册表和接口，`assets/recipes/` 是组件内部复用的 SDK 图层实现，`assets/shared/` 保存颜色、图例/统计、主题和底图等公共逻辑；`assets/remotion/` 与 `assets/video/` 分别提供原生叙事与场景复用模板，`examples/` 保存可运行示例。
 
 欢迎通过 [GitHub Issues](https://github.com/FloraCat526/geo-data-viz/issues) 提交问题或建议；反馈地图问题时，请提供脱敏数据样例、图商、预期效果和错误信息，不要附上私密凭证。
 
