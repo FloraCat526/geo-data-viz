@@ -89,7 +89,7 @@ npx @floracat/geo-data-viz@latest install --dir ~/.claude/skills
 npx @floracat/geo-data-viz@latest install --dir /path/to/skills
 ```
 
-> 原生 Remotion 叙事目前在 GitHub 源码中，尚未包含在 npm `0.3.0`。克隆后在仓库根目录运行 `node bin/geo-data-viz.mjs install`；已有安装可加 `--force`，安装器会先备份旧版本。其他宿主沿用对应的 `--dir` 参数。案例网站不随 npm 包安装。
+> npm `0.4.0` 起包含原生 Remotion 叙事模板。已有安装可在原安装命令末尾加 `--force`，安装器会先备份旧版本。若要安装 GitHub 上尚未发布的源码，在克隆后的仓库根目录运行 `node bin/geo-data-viz.mjs install`，并保留宿主所需的 `--dir` 参数。案例网站不随 npm 包安装。
 
 安装后若 Agent 未识别 Skill，重启或重新加载技能。安装器只复制 Skill 文件；数据分析另需 Python 3.10+，Excel 的可选依赖见下方说明。
 

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 — 2026-11-14
 
 - Add a native Remotion + MapLibre project generator for GeoJSON overviews, observed tracks, and timed event playback. Keep the existing scene JSON video workflow and ship both templates with the installer.
 - Improve globe hover, scale legends, mobile layout, and reduced-motion controls.
